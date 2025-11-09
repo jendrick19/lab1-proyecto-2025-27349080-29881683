@@ -2,48 +2,51 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('PersonaAtendidas', {
+    await queryInterface.createTable('PeopleAttendeds', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      tipoDocumento: {
-        type: Sequelize.ENUM('Cedula', 'RIF', 'Pasaporte', 'Otro')
+      documentType: {
+        type: Sequelize.ENUM('Cedula', 'RIF', 'Pasaporte', 'Otro'),
+        allowNull: false
       },
-      numeroDocumento: {
+      documentId: {
+        type: Sequelize.STRING,
+        unique: true
+      },
+      names: {
         type: Sequelize.STRING
       },
-      nombres: {
+      surNames: {
         type: Sequelize.STRING
       },
-      apellidos: {
-        type: Sequelize.STRING
-      },
-      fechaNacimiento: {
+      dateOfBirth: {
         type: Sequelize.DATE
       },
-      sexo: {
+      gender: {
         type: Sequelize.ENUM('M', 'F', 'O')
       },
-      telefono: {
+      phone: {
         type: Sequelize.STRING
       },
-      correo: {
+      email: {
         type: Sequelize.STRING
       },
-      direccion: {
+      address: {
         type: Sequelize.STRING
       },
-      contactoEmergencia: {
+      emergencyContact: {
         type: Sequelize.STRING
       },
-      alergias: {
+      allergies: {
         type: Sequelize.STRING
       },
-      estado: {
-        type: Sequelize.BOOLEAN
+      status: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: true
       },
       createdAt: {
         allowNull: false,
@@ -56,6 +59,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('PersonaAtendidas');
+    await queryInterface.dropTable('PeopleAttendeds');
   }
 };
