@@ -10,9 +10,13 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      Consent.belongsTo(models.PeopleAttended, {
+        foreignKey: 'peopleId',
+        as: 'peopleAttended'
+      });
     }
   }
+  
   Consent.init({
     peopleId: DataTypes.INTEGER,
     procedureType: DataTypes.STRING,

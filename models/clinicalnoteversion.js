@@ -10,9 +10,13 @@ module.exports = (sequelize, DataTypes) => {
      * The `models/index` file will call this method automatically.
      */
     static associate(models) {
-      // define association here
+      ClinicalNoteVersion.belongsTo(models.ClinicalNote, {
+        foreignKey: 'noteId',
+        as: 'clinicalNote'
+      });
     }
   }
+  
   ClinicalNoteVersion.init({
     noteId: DataTypes.INTEGER,
     versionDate: DataTypes.DATE,
