@@ -1,0 +1,14 @@
+const { Router } = require('express');
+
+const router = Router();
+
+router.get('/health', (req, res) => {
+  res.json({
+    module: 'platform-access',
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+module.exports = router;
+
