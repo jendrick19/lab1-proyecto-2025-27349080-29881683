@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const casesRoutes = require('./cases/routes');
+const casesRoutes = require('./routes');
 
 const router = Router();
 

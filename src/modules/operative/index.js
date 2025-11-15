@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const agendaRoutes = require('./agenda/routes');
+const agendaRoutes = require('./routes');
 
 const router = Router();
 

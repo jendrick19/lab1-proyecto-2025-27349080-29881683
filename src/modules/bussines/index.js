@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const billingRoutes = require('./billing/routes');
+const billingRoutes = require('./routes');
 
 const router = Router();
 

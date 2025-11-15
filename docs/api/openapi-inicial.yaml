@@ -261,6 +261,20 @@ paths:
           description: Buscar por nombre
           schema:
             type: string
+        - name: sortBy
+          in: query
+          description: Campo por el cual ordenar los resultados
+          schema:
+            type: string
+            enum: [nombres, apellidos, fechaNacimiento, createdAt]
+            default: apellidos
+        - name: sortOrder
+          in: query
+          description: Dirección del ordenamiento
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
       responses:
         '200':
           description: Lista de personas
@@ -284,7 +298,7 @@ paths:
     post:
       tags:
         - Personas
-      summary: Crear persona #Revisar los valores requeridos
+      summary: Registrar persona atendida
       requestBody:
         required: true
         content:
@@ -2082,6 +2096,12 @@ components:
           type: string
         estado:
           type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
         fechaCreacion:
           type: string
           format: date-time

@@ -1,4 +1,5 @@
 const { Router } = require('express');
+const peopleRoutes = require('./people.routes');
 
 const router = Router();
 
@@ -9,6 +10,8 @@ router.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+router.use('/personas', peopleRoutes);
 
 module.exports = router;
 

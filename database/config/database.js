@@ -31,3 +31,4 @@ module.exports = {
     port: Number(process.env.DB_PORT_PROD || process.env.DB_PORT) || 3306,
   },
 };
+
