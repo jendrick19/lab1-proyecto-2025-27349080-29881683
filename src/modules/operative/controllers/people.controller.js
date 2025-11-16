@@ -5,7 +5,6 @@ const {
   updatePerson,
   softDeletePerson,
 } = require('../services/people.service');
-const { NotFoundError } = require('../../../shared/errors/CustomErrors');
 
 const mapModelToResponse = (person) => {
   if (!person) {
@@ -105,10 +104,6 @@ const getHandler = async (req, res, next) => {
     const { id } = req.params;
     const person = await getPersonById(id);
 
-    if (!person) {
-      throw new NotFoundError('Persona no encontrada');
-    }
-
     return res.json({
       codigo: 200,
       mensaje: 'Persona encontrada',
@@ -141,14 +136,8 @@ const createHandler = async (req, res, next) => {
 const updateHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const person = await getPersonById(id);
-
-    if (!person) {
-      throw new NotFoundError('Persona no encontrada');
-    }
-
     const payload = mapRequestToModel(req.body);
-    const updated = await updatePerson(person, payload);
+    const updated = await updatePerson(id, payload);
 
     return res.json({
       codigo: 200,
@@ -163,13 +152,7 @@ const updateHandler = async (req, res, next) => {
 const deleteHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const person = await getPersonById(id);
-
-    if (!person) {
-      throw new NotFoundError('Persona no encontrada');
-    }
-
-    await softDeletePerson(person);
+    await softDeletePerson(id);
 
     return res.status(200).json({
       codigo: 200,

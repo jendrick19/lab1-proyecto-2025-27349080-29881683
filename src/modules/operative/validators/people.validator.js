@@ -1,47 +1,20 @@
-const { body, param, query, validationResult } = require('express-validator');
-const peopleRepository = require('../repositories/people.repository');
+const { body, param, query } = require('express-validator');
+const {
+  handleValidationErrors,
+  validateNames,
+  validateNamesOptional,
+  validateSurnames,
+  validateSurnamesOptional,
+  validateEmail,
+  validateEmailOptional,
+  validatePhone,
+  validateStatus,
+  validateIdParam,
+  validatePagination,
+  validateSorting,
+  validateStatusQuery,
+} = require('../../../shared/validators/common.validator');
 
-/**
- * Middleware para manejar los errores de validación
- */
-const handleValidationErrors = (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    const errorArray = errors.array();
-    
-    // Detectar si hay errores de duplicados (409 - Conflict)
-    const hasDuplicateError = errorArray.some(err => 
-      err.msg.includes('ya está registrado') || 
-      err.msg.includes('ya existe')
-    );
-
-    if (hasDuplicateError) {
-      return res.status(409).json({
-        codigo: 409,
-        mensaje: 'Conflicto: recurso duplicado',
-        tipo: 'ConflictError',
-        errores: errorArray.map(err => ({
-          campo: err.path,
-          mensaje: err.msg,
-          valor: err.value,
-        })),
-      });
-    }
-
-    // Errores de validación normales (400 - Bad Request)
-    return res.status(400).json({
-      codigo: 400,
-      mensaje: 'Errores de validación',
-      tipo: 'ValidationError',
-      errores: errorArray.map(err => ({
-        campo: err.path,
-        mensaje: err.msg,
-        valor: err.value,
-      })),
-    });
-  }
-  return next();
-};
 
 /**
  * Validación personalizada para verificar si el documento ya existe
@@ -87,15 +60,8 @@ const validateCreate = [
     .matches(/^[0-9A-Za-z]+$/).withMessage('El número de documento solo puede contener letras y números')
     .custom(checkDocumentUniqueness),
 
-  body('nombres')
-    .notEmpty().withMessage('Los nombres son requeridos')
-    .isLength({ min: 2, max: 100 }).withMessage('Los nombres deben tener entre 2 y 100 caracteres')
-    .matches(/^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]+$/).withMessage('Los nombres solo pueden contener letras'),
-
-  body('apellidos')
-    .notEmpty().withMessage('Los apellidos son requeridos')
-    .isLength({ min: 2, max: 100 }).withMessage('Los apellidos deben tener entre 2 y 100 caracteres')
-    .matches(/^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]+$/).withMessage('Los apellidos solo pueden contener letras'),
+  validateNames(),
+  validateSurnames(),
 
   body('fechaNacimiento')
     .notEmpty().withMessage('La fecha de nacimiento es requerida')
@@ -116,14 +82,8 @@ const validateCreate = [
     .notEmpty().withMessage('El sexo es requerido')
     .isIn(['M', 'F', 'O']).withMessage('El sexo debe ser M (Masculino), F (Femenino) u O (Otro)'),
 
-  body('telefono')
-    .optional()
-    .matches(/^\+?[0-9]{7,15}$/).withMessage('El teléfono debe contener entre 7 y 15 dígitos'),
-
-  body('correo')
-    .notEmpty().withMessage('El correo es requerido')
-    .isEmail().withMessage('El correo debe ser una dirección válida')
-    .normalizeEmail(),
+  validatePhone('telefono'),
+  validateEmail('correo'),
 
   body('direccion')
     .notEmpty().withMessage('La dirección es requerida')
@@ -137,10 +97,7 @@ const validateCreate = [
     .optional()
     .isLength({ max: 500 }).withMessage('Las alergias no pueden superar los 500 caracteres'),
 
-  body('estado')
-    .optional()
-    .isBoolean().withMessage('El estado debe ser verdadero o falso'),
-
+  validateStatus('estado'),
   handleValidationErrors,
 ];
 
@@ -149,9 +106,7 @@ const validateCreate = [
  * Los campos son opcionales, pero si se envían deben ser válidos
  */
 const validateUpdate = [
-  param('id')
-    .notEmpty().withMessage('El ID es requerido')
-    .isInt({ min: 1 }).withMessage('El ID debe ser un número entero positivo'),
+  validateIdParam(),
 
   body('tipoDocumento')
     .optional()
@@ -163,15 +118,8 @@ const validateUpdate = [
     .matches(/^[0-9A-Za-z]+$/).withMessage('El número de documento solo puede contener letras y números')
     .custom(checkDocumentUniqueness),
 
-  body('nombres')
-    .optional()
-    .isLength({ min: 2, max: 100 }).withMessage('Los nombres deben tener entre 2 y 100 caracteres')
-    .matches(/^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]+$/).withMessage('Los nombres solo pueden contener letras'),
-
-  body('apellidos')
-    .optional()
-    .isLength({ min: 2, max: 100 }).withMessage('Los apellidos deben tener entre 2 y 100 caracteres')
-    .matches(/^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]+$/).withMessage('Los apellidos solo pueden contener letras'),
+  validateNamesOptional(),
+  validateSurnamesOptional(),
 
   body('fechaNacimiento')
     .optional()
@@ -192,14 +140,8 @@ const validateUpdate = [
     .optional()
     .isIn(['M', 'F', 'O']).withMessage('El sexo debe ser M (Masculino), F (Femenino) u O (Otro)'),
 
-  body('telefono')
-    .optional()
-    .matches(/^\+?[0-9]{7,15}$/).withMessage('El teléfono debe contener entre 7 y 15 dígitos'),
-
-  body('correo')
-    .optional()
-    .isEmail().withMessage('El correo debe ser una dirección válida')
-    .normalizeEmail(),
+  validatePhone('telefono'),
+  validateEmailOptional('correo'),
 
   body('direccion')
     .optional()
@@ -213,10 +155,7 @@ const validateUpdate = [
     .optional()
     .isLength({ max: 500 }).withMessage('Las alergias no pueden superar los 500 caracteres'),
 
-  body('estado')
-    .optional()
-    .isBoolean().withMessage('El estado debe ser verdadero o falso'),
-
+  validateStatus('estado'),
   handleValidationErrors,
 ];
 
@@ -224,10 +163,7 @@ const validateUpdate = [
  * Validaciones para obtener/eliminar una persona por ID
  */
 const validateId = [
-  param('id')
-    .notEmpty().withMessage('El ID es requerido')
-    .isInt({ min: 1 }).withMessage('El ID debe ser un número entero positivo'),
-
+  validateIdParam(),
   handleValidationErrors,
 ];
 
@@ -235,21 +171,8 @@ const validateId = [
  * Validaciones para listar personas (query params)
  */
 const validateList = [
-  query('page')
-    .optional()
-    .isInt({ min: 1 }).withMessage('La página debe ser un número entero positivo'),
-
-  query('limit')
-    .optional()
-    .isInt({ min: 1, max: 100 }).withMessage('El límite debe ser un número entre 1 y 100'),
-
-  query('sortBy')
-    .optional()
-    .isIn(['nombres', 'apellidos', 'fechaNacimiento', 'createdAt']).withMessage('Campo de ordenamiento inválido'),
-
-  query('sortOrder')
-    .optional()
-    .isIn(['asc', 'desc']).withMessage('El orden debe ser "asc" o "desc"'),
+  ...validatePagination(),
+  ...validateSorting(['nombres', 'apellidos', 'fechaNacimiento', 'createdAt']),
 
   query('documento')
     .optional()
@@ -267,10 +190,7 @@ const validateList = [
     .optional()
     .isLength({ min: 1, max: 100 }).withMessage('El nombre debe tener entre 1 y 100 caracteres'),
 
-  query('estado')
-    .optional()
-    .isIn(['true', 'false', '1', '0', 'activo', 'inactive', 'active']).withMessage('Estado inválido'),
-
+  validateStatusQuery(),
   handleValidationErrors,
 ];
 
