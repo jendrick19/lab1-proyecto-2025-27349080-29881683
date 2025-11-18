@@ -2,10 +2,7 @@ const { Op } = require('sequelize');
 const peopleRepository = require('../repositories/people.repository');
 const { buildPaginationParams, buildPaginationResponse } = require('../../../shared/utils/pagination.helper');
 const { NotFoundError, ConflictError, BusinessLogicError } = require('../../../shared/errors/CustomErrors');
-const db = require('../../../../database/models');
 
-const { Appointment } = db.modules.operative;
-const { Episode } = db.modules.clinic;
 
 const SORT_FIELDS = {
   nombres: 'names',
@@ -120,19 +117,17 @@ const getPersonById = async (id) => {
 const createPerson = async (payload) => {
 
   if (payload.documentId) {
-    const existingPerson = await db.modules.operative.PeopleAttended.findOne({
-      where: {
-        documentType: payload.documentType,
-        documentId: payload.documentId,
-      },
-    });
+    const existingPerson = await peopleRepository.findByDocument(
+      payload.documentType,
+      payload.documentId
+    );
 
     if (existingPerson) {
       throw new ConflictError(
         `Ya existe una persona registrada con el documento ${payload.documentType}: ${payload.documentId}`
       );
     }
-  };
+  }
 
   return peopleRepository.create(payload);
 };
@@ -141,15 +136,11 @@ const updatePerson = async (id, payload) => {
   const person = await getPersonById(id);
 
   if (payload.documentId && (payload.documentId !== person.documentId || payload.documentType !== person.documentType)) {
-    const existingPerson = await db.modules.operative.PeopleAttended.findOne({
-      where: {
-        documentType: payload.documentType || person.documentType,
-        documentId: payload.documentId,
-        id: {
-          [Op.ne]: person.id, 
-        },
-      },
-    });
+    const existingPerson = await peopleRepository.findByDocument(
+      payload.documentType || person.documentType,
+      payload.documentId,
+      person.id
+    );
 
     if (existingPerson) {
       throw new ConflictError(
