@@ -44,10 +44,7 @@ class ConflictError extends AppError {
   }
 }
 
-/**
- * Error 422 - Unprocessable Entity
- * Para errores de lógica de negocio
- */
+
 class BusinessLogicError extends AppError {
   constructor(message = 'Error en la lógica de negocio') {
     super(message, 422);
@@ -55,10 +52,6 @@ class BusinessLogicError extends AppError {
   }
 }
 
-/**
- * Error 500 - Internal Server Error
- * Para errores internos del servidor
- */
 class InternalError extends AppError {
   constructor(message = 'Error interno del servidor') {
     super(message, 500);

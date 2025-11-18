@@ -1,9 +1,9 @@
 const { Router } = require('express');
-const agendaRoutes = require('./routes');
+const operativeRoutes = require('./routes');
 
 const router = Router();
 
-router.use('/agenda', agendaRoutes);
+router.use('/', operativeRoutes);
 
 module.exports = router;
 

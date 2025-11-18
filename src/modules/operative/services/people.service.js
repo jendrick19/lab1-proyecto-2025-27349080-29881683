@@ -1,5 +1,8 @@
 const { Op } = require('sequelize');
 const peopleRepository = require('../repositories/people.repository');
+const { buildPaginationParams, buildPaginationResponse } = require('../../../shared/utils/pagination.helper');
+const { NotFoundError, ConflictError, BusinessLogicError } = require('../../../shared/errors/CustomErrors');
+
 
 const SORT_FIELDS = {
   nombres: 'names',
@@ -83,9 +86,8 @@ const listPeople = async ({
   sortBy,
   sortOrder,
 }) => {
-  const safePage = Number.isNaN(Number(page)) || Number(page) < 1 ? 1 : Number(page);
-  const safeLimit = Number.isNaN(Number(limit)) || Number(limit) < 1 ? 20 : Math.min(Number(limit), 100);
-  const offset = (safePage - 1) * safeLimit;
+
+  const { safePage, safeLimit, offset } = buildPaginationParams(page, limit);
 
   const orderField = SORT_FIELDS[sortBy] || SORT_FIELDS.apellidos;
   const orderDirection = sortOrder === 'desc' ? 'DESC' : 'ASC';
@@ -99,31 +101,59 @@ const listPeople = async ({
     order: [[orderField, orderDirection]],
   });
 
-  return {
-    rows,
-    count,
-    pagination: {
-      page: safePage,
-      limit: safeLimit,
-      total: count,
-      totalPages: Math.ceil(count / safeLimit) || 0,
-    },
-  };
+  return buildPaginationResponse(rows, count, safePage, safeLimit);
 };
 
 const getPersonById = async (id) => {
-  return peopleRepository.findById(id);
+  const person = await peopleRepository.findById(id);
+  
+  if (!person) {
+    throw new NotFoundError('Persona no encontrada');
+  }
+  
+  return person;
 };
 
 const createPerson = async (payload) => {
+
+  if (payload.documentId) {
+    const existingPerson = await peopleRepository.findByDocument(
+      payload.documentType,
+      payload.documentId
+    );
+
+    if (existingPerson) {
+      throw new ConflictError(
+        `Ya existe una persona registrada con el documento ${payload.documentType}: ${payload.documentId}`
+      );
+    }
+  }
+
   return peopleRepository.create(payload);
 };
 
-const updatePerson = async (person, payload) => {
+const updatePerson = async (id, payload) => {
+  const person = await getPersonById(id);
+
+  if (payload.documentId && (payload.documentId !== person.documentId || payload.documentType !== person.documentType)) {
+    const existingPerson = await peopleRepository.findByDocument(
+      payload.documentType || person.documentType,
+      payload.documentId,
+      person.id
+    );
+
+    if (existingPerson) {
+      throw new ConflictError(
+        `Ya existe otra persona registrada con el documento ${payload.documentType || person.documentType}: ${payload.documentId}`
+      );
+    }
+  }
+
   return peopleRepository.update(person, payload);
 };
 
-const softDeletePerson = async (person) => {
+const softDeletePerson = async (id) => {
+  const person = await getPersonById(id);
   person.status = false;
   return peopleRepository.save(person);
 };

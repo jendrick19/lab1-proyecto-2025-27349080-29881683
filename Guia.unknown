@@ -1,0 +1,715 @@
+# 📘 Guía Completa: Implementación de un CRUD con Node.js + Express + Sequelize
+
+## 🎯 Objetivo
+Esta guía explica paso a paso cómo implementar un recurso completo (por ejemplo, `Professional`) siguiendo la arquitectura establecida en el proyecto.
+
+---
+
+## 📋 Índice
+1. [Planificación y Diseño](#1-planificación-y-diseño)
+2. [Crear la Migración](#2-crear-la-migración)
+3. [Crear el Modelo de Sequelize](#3-crear-el-modelo-de-sequelize)
+4. [Registrar el Modelo](#4-registrar-el-modelo)
+5. [Crear el Repositorio](#5-crear-el-repositorio)
+6. [Crear el Servicio](#6-crear-el-servicio)
+7. [Crear el Controlador](#7-crear-el-controlador)
+8. [Crear las Validaciones](#8-crear-las-validaciones)
+9. [Crear las Rutas](#9-crear-las-rutas)
+10. [Registrar las Rutas](#10-registrar-las-rutas)
+11. [Ejecutar Migraciones](#11-ejecutar-migraciones)
+12. [Crear Seeder (Opcional)](#12-crear-seeder-opcional)
+13. [Probar el API](#13-probar-el-api)
+14. [Documentar](#14-documentar)
+
+---
+
+## 1. Planificación y Diseño
+
+### Paso 1.1: Definir el Modelo de Datos
+Antes de escribir código, define:
+- **Campos necesarios**: nombre, apellido, especialidad, licencia, email, teléfono, etc.
+- **Tipos de datos**: String, Integer, Date, Boolean, ENUM, etc.
+- **Restricciones**: NOT NULL, UNIQUE, DEFAULT
+- **Relaciones**: Tiene citas, pertenece a una unidad, etc.
+
+### Paso 1.2: Definir las Operaciones CRUD
+Decide qué operaciones necesitas:
+- **CREATE**: Registrar un nuevo profesional
+- **READ**: Listar todos, obtener uno por ID, buscar por especialidad
+- **UPDATE**: Actualizar información del profesional
+- **DELETE**: Eliminar (soft delete o hard delete)
+
+### Paso 1.3: Definir las Reglas de Validación
+Establece las reglas:
+- Campos requeridos vs opcionales
+- Formato de email
+- Longitud de strings
+- Valores permitidos en enums
+- Unicidad (email, número de licencia)
+
+### Paso 1.4: Determinar la Ubicación
+Según la arquitectura:
+- **Operative**: Agendas, citas, profesionales → `src/modules/operative/`
+- **Clinic**: Casos clínicos, diagnósticos → `src/modules/clinic/`
+- **Business**: Facturación → `src/modules/bussines/`
+- **Platform**: Usuarios, accesos → `src/modules/platform/`
+
+---
+
+## 2. Crear la Migración
+
+### Paso 2.1: Generar la Migración
+Usa Sequelize CLI para crear el archivo de migración.
+
+### Paso 2.2: Definir la Estructura de la Tabla
+En el método `up`:
+- Define cada columna con su tipo de dato
+- Establece las restricciones (allowNull, unique, defaultValue)
+- Define los ENUM si los hay
+- Agrega las claves foráneas para las relaciones
+- Incluye timestamps (createdAt, updatedAt)
+
+### Paso 2.3: Definir el Rollback
+En el método `down`:
+- Escribe la operación inversa (usualmente dropTable)
+
+### Paso 2.4: Consideraciones Importantes
+- Nombra la tabla en plural (Professionals)
+- Usa camelCase para nombres de columnas en migraciones
+- Define índices para columnas que se buscarán frecuentemente
+- Documenta las claves foráneas correctamente
+
+---
+
+## 3. Crear el Modelo de Sequelize
+
+### Paso 3.1: Crear el Archivo del Modelo
+Crea el archivo en la carpeta `models` del módulo correspondiente.
+
+### Paso 3.2: Definir la Clase del Modelo
+- Extiende de la clase Model de Sequelize
+- Usa el nombre en singular (Professional)
+
+### Paso 3.3: Definir los Atributos
+Usa el método `init` para definir:
+- Cada campo con su tipo de dato
+- Validaciones a nivel de modelo (isEmail, notEmpty, len, etc.)
+- Getters y setters personalizados si es necesario
+
+### Paso 3.4: Definir las Asociaciones
+En el método estático `associate`:
+- hasMany: Un profesional tiene muchas citas
+- belongsTo: Un profesional pertenece a una unidad
+- hasOne: Un profesional tiene un usuario
+- belongsToMany: Relaciones muchos a muchos con tabla pivote
+
+### Paso 3.5: Configurar el Modelo
+Define:
+- El nombre del modelo (modelName)
+- El nombre de la tabla si difiere del nombre del modelo
+- Si usa timestamps
+- Si usa paranoid (soft deletes)
+
+---
+
+## 4. Registrar el Modelo
+
+### Paso 4.1: Registrar en database/models/index.js
+Agrega el modelo al array `modelFactories`:
+- Usa require para importar el factory del modelo
+- La ruta debe apuntar al archivo del modelo
+
+### Paso 4.2: Agregar a la Estructura de Módulos
+En el objeto `db.modules`:
+- Agrega el modelo al módulo correspondiente
+- Usa el nombre de la clase (Professional)
+- Referencia desde db[ModelName]
+
+### Paso 4.3: Verificar Inicialización
+Asegúrate de que:
+- El modelo se registra antes de las asociaciones
+- Las asociaciones se ejecutan después de registrar todos los modelos
+
+---
+
+## 5. Crear el Repositorio
+
+### Paso 5.1: Crear el Archivo del Repositorio
+Crea el archivo en `repositories/` con el nombre del modelo.
+
+### Paso 5.2: Importar el Modelo
+- Importa desde database/models
+- Extrae el modelo de db.modules.{modulo}
+
+### Paso 5.3: Implementar Operaciones Básicas
+Crea funciones para:
+- **findById**: Buscar por ID primario
+- **findAll**: Listar todos con opciones de filtrado
+- **findAndCountAll**: Para paginación
+- **create**: Crear un nuevo registro
+- **update**: Actualizar un registro existente
+- **save**: Guardar cambios en una instancia
+- **delete/destroy**: Eliminar (hard delete)
+
+### Paso 5.4: Implementar Operaciones Específicas
+Agrega funciones especializadas:
+- findByEmail: Buscar por email único
+- findBySpecialty: Filtrar por especialidad
+- findAvailable: Profesionales disponibles
+
+### Paso 5.5: Manejo de Relaciones
+Si necesitas datos relacionados:
+- Usa include en las queries
+- Define los alias correctamente
+- Especifica los atributos a traer
+
+### Paso 5.6: Buenas Prácticas del Repositorio
+- Solo acceso a datos, sin lógica de negocio
+- Retorna instancias de Sequelize o null
+- No maneja errores, los deja propagar
+- Funciones puras y reutilizables
+
+---
+
+## 6. Crear el Servicio
+
+### Paso 6.1: Crear el Archivo del Servicio
+Crea el archivo en `services/` con el nombre del modelo.
+
+### Paso 6.2: Importar el Repositorio
+Importa todas las funciones del repositorio.
+
+### Paso 6.3: Implementar la Lógica de Negocio
+Para cada operación:
+- **listProfessionals**: Maneja paginación, filtros, ordenamiento
+- **getProfessionalById**: Obtiene uno por ID
+- **createProfessional**: Valida y crea
+- **updateProfessional**: Valida y actualiza
+- **deleteProfessional**: Soft delete o hard delete
+
+### Paso 6.4: Agregar Validaciones de Negocio
+Implementa reglas específicas:
+- Un profesional no puede tener más de X citas por día
+- La especialidad debe estar en la lista permitida
+- No se puede eliminar si tiene citas activas
+
+### Paso 6.5: Transformar Datos
+- Construye objetos where para Sequelize
+- Mapea parámetros de entrada a formato de BD
+- Calcula campos derivados (edad, disponibilidad)
+
+### Paso 6.6: Manejo de Errores del Servicio
+- Lanza errores personalizados (NotFoundError, BusinessLogicError)
+- Agrega contexto a los errores
+- No atrapes errores, déjalos propagar al controlador
+
+---
+
+## 7. Crear el Controlador
+
+### Paso 7.1: Crear el Archivo del Controlador
+Crea el archivo en `controllers/` con el nombre del modelo.
+
+### Paso 7.2: Importar Servicios y Errores
+- Importa todas las funciones del servicio
+- Importa los errores personalizados de shared/errors
+
+### Paso 7.3: Crear Funciones Mapper
+Define funciones auxiliares:
+- **mapModelToResponse**: Convierte el modelo de BD a respuesta API
+- **mapRequestToModel**: Convierte request body a formato del modelo
+- Usa los nombres que el frontend espera (camelCase, español)
+
+### Paso 7.4: Implementar los Handlers
+Crea un handler para cada ruta:
+- **listHandler**: GET /professionals (lista con paginación)
+- **getHandler**: GET /professionals/:id (obtener uno)
+- **createHandler**: POST /professionals (crear)
+- **updateHandler**: PATCH /professionals/:id (actualizar)
+- **deleteHandler**: DELETE /professionals/:id (eliminar)
+
+### Paso 7.5: Estructura de Cada Handler
+Cada handler debe:
+1. Extraer parámetros del request (params, query, body)
+2. Llamar al servicio correspondiente
+3. Transformar la respuesta con el mapper
+4. Retornar el código HTTP apropiado (200, 201, 204)
+5. Pasar errores al middleware con next(error)
+
+### Paso 7.6: Respuestas Consistentes
+Usa el formato estándar:
+- Código HTTP apropiado
+- Objeto con: codigo, mensaje, data
+- Incluye pagination si aplica
+
+---
+
+## 8. Crear las Validaciones
+
+### Paso 8.1: Crear el Archivo de Validaciones
+Crea el archivo en `validators/` con el nombre del modelo.
+
+### Paso 8.2: Importar express-validator
+Importa body, param, query, validationResult.
+
+### Paso 8.3: Crear el Middleware de Manejo de Errores
+Define `handleValidationErrors`:
+- Lee los errores con validationResult
+- Detecta errores de duplicados para retornar 409
+- Retorna 400 para validaciones normales
+- Formato consistente de respuesta de error
+
+### Paso 8.4: Crear Validaciones para CREATE
+Define `validateCreate` como array:
+- Valida cada campo requerido con .notEmpty()
+- Valida tipos de datos (.isEmail(), .isInt(), etc.)
+- Valida formatos con .matches() o .isIn()
+- Valida longitudes con .isLength()
+- Agrega mensajes descriptivos con .withMessage()
+- Termina con handleValidationErrors
+
+### Paso 8.5: Crear Validaciones para UPDATE
+Define `validateUpdate` como array:
+- Similar a CREATE pero todos los campos son .optional()
+- Valida el ID en params
+- Valida unicidad si se cambia email/licencia
+- Termina con handleValidationErrors
+
+### Paso 8.6: Crear Validaciones para ID
+Define `validateId` para operaciones GET/DELETE:
+- Valida que el ID sea un entero positivo
+- Termina con handleValidationErrors
+
+### Paso 8.7: Crear Validaciones para LIST
+Define `validateList` para query params:
+- page: entero positivo
+- limit: entero entre 1 y 100
+- sortBy: valores permitidos
+- sortOrder: asc o desc
+- Filtros específicos del modelo
+- Termina con handleValidationErrors
+
+### Paso 8.8: Validaciones Personalizadas
+Crea funciones custom para:
+- Verificar unicidad de email/licencia en BD
+- Validar que especialidad exista
+- Validar formato de licencia profesional
+- Usa .custom() para validaciones asíncronas
+
+### Paso 8.9: Exportar las Validaciones
+Exporta todos los arrays de validación para usarlos en las rutas.
+
+---
+
+## 9. Crear las Rutas
+
+### Paso 9.1: Crear el Archivo de Rutas Específico
+Crea el archivo en `routes/` con el nombre del modelo (professional.routes.js).
+
+### Paso 9.2: Importar Dependencias
+- Router de express
+- Todos los handlers del controlador
+- Todas las validaciones del validator
+
+### Paso 9.3: Crear la Instancia del Router
+Crea una instancia de Router().
+
+### Paso 9.4: Definir las Rutas CRUD
+Define las rutas siguiendo el patrón RESTful:
+- GET / → listHandler con validateList
+- POST / → createHandler con validateCreate
+- GET /:id → getHandler con validateId
+- PATCH /:id → updateHandler con validateUpdate
+- DELETE /:id → deleteHandler con validateId
+
+### Paso 9.5: Orden de las Rutas
+Importante el orden:
+- Rutas específicas antes de rutas con parámetros
+- GET /available antes de GET /:id
+- Evita conflictos de rutas
+
+### Paso 9.6: Agregar Rutas Adicionales
+Si necesitas rutas especiales:
+- GET /specialty/:specialty → Por especialidad
+- GET /available → Profesionales disponibles
+- POST /:id/assign → Asignar a unidad
+
+### Paso 9.7: Exportar el Router
+Exporta el router para usarlo en el index de rutas.
+
+---
+
+## 10. Registrar las Rutas
+
+### Paso 10.1: Modificar routes/index.js del Módulo
+En `src/modules/operative/routes/index.js`:
+- Importa el router del professional
+- Registra la ruta con router.use('/profesionales', professionalRoutes)
+- Mantén consistencia en los nombres (español, plural)
+
+### Paso 10.2: Verificar la Ruta Completa
+La ruta final será:
+- Base: /api
+- Módulo: /operative
+- Submódulo: /agenda
+- Recurso: /profesionales
+- Completa: /api/operative/agenda/profesionales
+
+### Paso 10.3: Agregar Health Check
+Opcionalmente agrega un endpoint de salud para el recurso.
+
+---
+
+## 11. Ejecutar Migraciones
+
+### Paso 11.1: Verificar la Migración
+Revisa el archivo de migración antes de ejecutarlo:
+- Verifica nombres de columnas
+- Verifica tipos de datos
+- Verifica restricciones
+- Verifica claves foráneas
+
+### Paso 11.2: Ejecutar la Migración
+Corre el comando para aplicar la migración a la base de datos.
+
+### Paso 11.3: Verificar en la Base de Datos
+Conéctate a la BD y verifica:
+- La tabla se creó correctamente
+- Las columnas tienen los tipos correctos
+- Los índices están creados
+- Las claves foráneas funcionan
+
+### Paso 11.4: Probar Rollback
+Deshaz la migración para probar que funciona correctamente, luego vuélvela a aplicar.
+
+---
+
+## 12. Crear Seeder (Opcional)
+
+### Paso 12.1: Generar el Seeder
+Usa Sequelize CLI para crear el archivo de seeder.
+
+### Paso 12.2: Definir Datos de Prueba
+En el método `up`:
+- Crea un array con objetos de datos de prueba
+- Incluye datos realistas y variados
+- Asegura que cumplan las validaciones
+- Incluye timestamps (createdAt, updatedAt)
+
+### Paso 12.3: Generar Datos Dinámicamente
+Para muchos registros:
+- Usa loops para generar datos
+- Usa arrays de nombres, especialidades, etc.
+- Genera emails y licencias únicos
+- Usa Math.random() para variedad
+
+### Paso 12.4: Insertar Datos
+Usa bulkInsert para insertar todos los registros de una vez.
+
+### Paso 12.5: Definir el Down
+En el método `down`:
+- Usa bulkDelete para eliminar los datos
+- Puedes eliminar por condiciones específicas o todos
+
+### Paso 12.6: Ejecutar el Seeder
+Corre el comando para poblar la base de datos con datos de prueba.
+
+---
+
+## 13. Probar el API
+
+### Paso 13.1: Iniciar el Servidor
+Arranca el servidor en modo desarrollo.
+
+### Paso 13.2: Probar con Thunder Client/Postman
+Crea una colección con peticiones para:
+
+**CREATE - POST /api/operative/agenda/profesionales**
+- Envía datos válidos
+- Verifica que retorna 201
+- Verifica que retorna el objeto creado
+- Prueba con datos inválidos (debe retornar 400)
+- Prueba con datos duplicados (debe retornar 409)
+
+**READ LIST - GET /api/operative/agenda/profesionales**
+- Sin parámetros (debe retornar todos)
+- Con paginación (?page=2&limit=5)
+- Con filtros (?especialidad=Cardiologia)
+- Con ordenamiento (?sortBy=nombres&sortOrder=desc)
+- Verifica el objeto pagination
+
+**READ ONE - GET /api/operative/agenda/profesionales/:id**
+- Con ID existente (debe retornar 200 y el objeto)
+- Con ID inexistente (debe retornar 404)
+- Con ID inválido (debe retornar 400)
+
+**UPDATE - PATCH /api/operative/agenda/profesionales/:id**
+- Actualiza campos válidos (debe retornar 200)
+- Con ID inexistente (debe retornar 404)
+- Con datos inválidos (debe retornar 400)
+- Intenta duplicar email (debe retornar 409)
+
+**DELETE - DELETE /api/operative/agenda/profesionales/:id**
+- Con ID existente (debe retornar 200 o 204)
+- Con ID inexistente (debe retornar 404)
+- Verifica si es soft delete o hard delete
+
+### Paso 13.3: Probar Casos Extremos
+- Campos con longitud máxima
+- Campos con caracteres especiales
+- Múltiples filtros simultáneos
+- Páginas fuera de rango
+- Límites muy grandes
+
+### Paso 13.4: Verificar en la Base de Datos
+Después de cada operación, verifica en la BD que:
+- Los datos se guardaron correctamente
+- Los soft deletes funcionan
+- Las relaciones se mantienen
+- Los timestamps se actualizan
+
+### Paso 13.5: Probar con cURL
+Crea comandos cURL para documentar y automatizar las pruebas.
+
+---
+
+## 14. Documentar
+
+### Paso 14.1: Documentar el Modelo
+Crea un README.md en la carpeta del recurso con:
+- Descripción del recurso
+- Campos y tipos de datos
+- Relaciones con otros modelos
+- Reglas de negocio importantes
+
+### Paso 14.2: Documentar las Rutas
+Documenta cada endpoint:
+- Método HTTP y URL
+- Parámetros (path, query, body)
+- Ejemplo de request
+- Ejemplo de response (éxito y error)
+- Códigos de estado posibles
+
+### Paso 14.3: Documentar Casos de Uso
+Explica escenarios comunes:
+- Cómo crear un profesional
+- Cómo buscar por especialidad
+- Cómo asignar a una unidad
+- Cómo manejar citas
+
+### Paso 14.4: Documentar Validaciones
+Lista todas las validaciones:
+- Campos requeridos
+- Formatos esperados
+- Valores permitidos en enums
+- Restricciones de unicidad
+
+### Paso 14.5: Crear Colección de Postman
+Exporta la colección con todos los ejemplos y compártela con el equipo.
+
+### Paso 14.6: Actualizar README Principal
+Agrega el nuevo recurso a la documentación principal del proyecto.
+
+---
+
+## 🎯 Checklist Final
+
+Antes de considerar completo el recurso, verifica:
+
+### Base de Datos
+- [ ] Migración creada y ejecutada
+- [ ] Tabla existe en la BD con estructura correcta
+- [ ] Índices creados para búsquedas frecuentes
+- [ ] Claves foráneas funcionando
+- [ ] Seeder opcional creado y probado
+
+### Código
+- [ ] Modelo de Sequelize creado y registrado
+- [ ] Asociaciones definidas correctamente
+- [ ] Repositorio implementado con todas las operaciones
+- [ ] Servicio con lógica de negocio
+- [ ] Controlador con todos los handlers
+- [ ] Validaciones completas (create, update, list, id)
+- [ ] Rutas definidas y registradas
+- [ ] Sin errores de linting
+
+### Funcionalidad
+- [ ] CREATE funciona (201 con datos válidos, 400/409 con inválidos)
+- [ ] READ LIST funciona (con paginación, filtros, ordenamiento)
+- [ ] READ ONE funciona (200 si existe, 404 si no)
+- [ ] UPDATE funciona (200 si existe, 404/400/409 según caso)
+- [ ] DELETE funciona (200/204 si existe, 404 si no)
+- [ ] Validaciones de duplicados funcionan (409)
+- [ ] Validaciones de formato funcionan (400)
+- [ ] Manejo de errores consistente
+
+### Documentación
+- [ ] README del recurso
+- [ ] Ejemplos de peticiones
+- [ ] Colección de Postman/Thunder Client
+- [ ] Comentarios en código importante
+- [ ] Actualizado el README principal
+
+---
+
+## 💡 Consejos y Mejores Prácticas
+
+### Arquitectura
+1. **Separación de Responsabilidades**
+   - Repositorio: Solo acceso a datos
+   - Servicio: Lógica de negocio
+   - Controlador: Manejo de HTTP
+   - Validador: Validación de entrada
+
+2. **No Repitas Código (DRY)**
+   - Reutiliza funciones mapper
+   - Usa funciones auxiliares compartidas
+   - Centraliza constantes y enums
+
+3. **Mantén Consistencia**
+   - Nombres en español para API
+   - CamelCase en código
+   - Plural para recursos
+   - Códigos HTTP estándar
+
+### Validaciones
+1. **Valida en Múltiples Niveles**
+   - Express-validator: Formato y tipos
+   - Sequelize: Validaciones de modelo
+   - Servicio: Reglas de negocio
+   - Base de datos: Constraints
+
+2. **Mensajes Claros**
+   - Específicos y descriptivos
+   - En español para el usuario
+   - Incluye el campo y el valor cuando sea útil
+
+### Seguridad
+1. **Sanitiza Entradas**
+   - Usa express-validator
+   - Escapa caracteres especiales
+   - Valida longitudes máximas
+
+2. **No Expongas Información Sensible**
+   - Mapea respuestas para ocultar campos internos
+   - No retornes stack traces en producción
+   - Usa mensajes de error genéricos cuando sea apropiado
+
+### Performance
+1. **Optimiza Queries**
+   - Usa índices en columnas de búsqueda
+   - Limita los campos retornados
+   - Pagina resultados grandes
+
+2. **Carga Bajo Demanda**
+   - No traigas relaciones si no las necesitas
+   - Usa lazy loading cuando sea apropiado
+
+### Testing
+1. **Prueba Todos los Casos**
+   - Casos exitosos
+   - Casos de error
+   - Casos extremos
+   - Casos de concurrencia
+
+2. **Automatiza Pruebas**
+   - Crea scripts de prueba
+   - Usa colecciones de Postman
+   - Considera tests unitarios y de integración
+
+---
+
+## 🔄 Patrón de Flujo Completo
+
+### Request → Response
+```
+1. Cliente envía petición
+   ↓
+2. Express recibe en la ruta
+   ↓
+3. Validador valida los datos (express-validator)
+   ↓ [Si falla: 400/409]
+4. Controlador recibe la petición
+   ↓
+5. Controlador mapea request a formato de servicio
+   ↓
+6. Servicio aplica lógica de negocio
+   ↓ [Si falla regla de negocio: lanza error]
+7. Servicio llama al repositorio
+   ↓
+8. Repositorio ejecuta query en Sequelize
+   ↓
+9. Sequelize valida con validadores de modelo
+   ↓ [Si falla: lanza error de Sequelize]
+10. Base de datos ejecuta y retorna resultado
+    ↓
+11. Repositorio retorna instancia o datos
+    ↓
+12. Servicio procesa y retorna al controlador
+    ↓
+13. Controlador mapea a formato de respuesta
+    ↓
+14. Express envía respuesta con código HTTP apropiado
+```
+
+### Manejo de Errores
+```
+Error en cualquier nivel
+   ↓
+next(error) en controlador
+   ↓
+Middleware errorHandler (shared/middlewares)
+   ↓
+Detecta tipo de error
+   ↓
+Retorna código HTTP apropiado:
+   - ValidationError → 400
+   - NotFoundError → 404
+   - ConflictError → 409
+   - BusinessLogicError → 422
+   - Sequelize errors → según tipo
+   - Otros → 500
+```
+
+---
+
+## 📚 Recursos Adicionales
+
+### Documentación Oficial
+- Express.js: https://expressjs.com/
+- Sequelize: https://sequelize.org/
+- Express-validator: https://express-validator.github.io/
+
+### Tutoriales Recomendados
+- RESTful API design best practices
+- Node.js error handling patterns
+- Sequelize migrations and seeders
+
+### Herramientas Útiles
+- Postman/Thunder Client: Testing de APIs
+- DB Browser: Visualizar base de datos
+- Sequelize CLI: Gestión de migraciones
+- ESLint: Linting de código
+
+---
+
+## ✅ Conclusión
+
+Siguiendo esta guía paso a paso, podrás implementar cualquier recurso nuevo en el proyecto manteniendo:
+- ✅ Arquitectura consistente
+- ✅ Código organizado y mantenible
+- ✅ Validaciones robustas
+- ✅ Manejo de errores apropiado
+- ✅ APIs RESTful estándar
+- ✅ Documentación completa
+
+**Tiempo estimado para implementar un recurso completo:** 2-4 horas (dependiendo de la complejidad)
+
+**Recuerda:** Esta guía es un framework, ajústala según las necesidades específicas de cada recurso, pero mantén la estructura base para consistencia en todo el proyecto.
+
+---
+
+**Documento creado:** 2024
+**Versión:** 1.0
+**Proyecto:** Sistema de Gestión Clínica - Node.js + Express + Sequelize
+
