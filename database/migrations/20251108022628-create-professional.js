@@ -9,7 +9,7 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      idUsuario: {
+      userId: {
         type: Sequelize.INTEGER,      
         allowNull: false,             
         unique: true,                 
@@ -20,36 +20,36 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      nombres: {
+      names: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      apellidos: {
+      surNames: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      registroProfesional: {
+      professionalRegister: {
         type: Sequelize.STRING,
         allowNull: false,
         unique: true
       },
-      especialidad: {
+      specialty: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      correo: {
+      email: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      telefono: {
+      phone: {
         type: Sequelize.STRING,
         allowNull: false
       },
-      agendaHabilitada: {
+      scheduleEnabled: {
         type: Sequelize.BOOLEAN,
         defaultValue: false
       },
-      estado: {
+      status: {
         type: Sequelize.BOOLEAN,
         defaultValue: true
       },
