@@ -36,10 +36,14 @@ module.exports = {
         type: Sequelize.DATE
       },
       capacity: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false,
+        defaultValue: 1
       },
       status: {
-        type: Sequelize.STRING
+        type: Sequelize.ENUM('abierta', 'cerrada', 'reservada'),
+        allowNull: false,
+        defaultValue: 'abierta'
       },
       createdAt: {
         allowNull: false,

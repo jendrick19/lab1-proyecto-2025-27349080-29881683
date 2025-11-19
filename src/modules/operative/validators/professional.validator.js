@@ -15,9 +15,6 @@ const {
   validateStatusQuery,
 } = require('../../../shared/validators/common.validator');
 
-/**
- * Lista de especialidades permitidas
- */
 const ALLOWED_SPECIALTIES = [
   'Cardiología',
   'Pediatría',
@@ -32,9 +29,7 @@ const ALLOWED_SPECIALTIES = [
 ];
 
 
-/**
- * Validación personalizada para verificar si el registro profesional ya existe
- */
+
 const checkProfessionalRegisterUniqueness = async (value, { req }) => {
   const { Op } = require('sequelize');
   const db = require('../../../../database/models');
@@ -44,7 +39,6 @@ const checkProfessionalRegisterUniqueness = async (value, { req }) => {
     professionalRegister: value,
   };
 
-  // Si es una actualización, excluir el registro actual
   if (req.params?.id) {
     where.id = { [Op.ne]: req.params.id };
   }
@@ -58,9 +52,7 @@ const checkProfessionalRegisterUniqueness = async (value, { req }) => {
   return true;
 };
 
-/**
- * Validación personalizada para verificar si el email ya existe
- */
+
 const checkEmailUniqueness = async (value, { req }) => {
   const { Op } = require('sequelize');
   const db = require('../../../../database/models');
@@ -70,7 +62,7 @@ const checkEmailUniqueness = async (value, { req }) => {
     email: value,
   };
 
-  // Si es una actualización, excluir el registro actual
+  
   if (req.params?.id) {
     where.id = { [Op.ne]: req.params.id };
   }
@@ -84,9 +76,7 @@ const checkEmailUniqueness = async (value, { req }) => {
   return true;
 };
 
-/**
- * Validación personalizada para verificar si el username ya existe (para usuarios)
- */
+
 const checkUsernameUniqueness = async (value) => {
   const db = require('../../../../database/models');
   const { User } = db.modules.platform;
@@ -102,9 +92,7 @@ const checkUsernameUniqueness = async (value) => {
   return true;
 };
 
-/**
- * Validaciones para crear un profesional
- */
+
 const validateCreate = [
   validateNames(),
   validateSurnames(),
