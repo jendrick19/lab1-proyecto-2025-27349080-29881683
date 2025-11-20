@@ -17,6 +17,7 @@ if (config.use_env_variable) {
 
 const modelFactories = [
   require('../../src/modules/operative/models/appointment'),
+  require('../../src/modules/operative/models/appointmenthistory'),
   require('../../src/modules/operative/models/careunit'),
   require('../../src/modules/operative/models/peopleattended'),
   require('../../src/modules/operative/models/professional'),
@@ -46,6 +47,7 @@ db.Sequelize = Sequelize;
 db.modules = {
   operative: {
     Appointment: db.Appointment,
+    AppointmentHistory: db.AppointmentHistory,
     CareUnit: db.CareUnit,
     PeopleAttended: db.PeopleAttended,
     Professional: db.Professional,

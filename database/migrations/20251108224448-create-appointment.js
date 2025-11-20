@@ -29,6 +29,16 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
+      scheduleId: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+        references: {
+            model: 'Schedules', // FK a la tabla Schedules
+            key: 'id'
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'SET NULL'
+      },
       unitId: {
         type: Sequelize.INTEGER,
         allowNull: false,
