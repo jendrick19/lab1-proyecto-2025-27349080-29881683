@@ -1,238 +1,126 @@
-# 🌱 Seeders - Datos de Prueba
+# Seeders - Orden de Ejecución
 
-Este directorio contiene seeders para poblar la base de datos con datos de prueba.
+Este documento describe el orden correcto para ejecutar los seeders debido a las dependencias entre tablas.
 
-## 📋 Seeders Disponibles
+## Orden de Ejecución
 
-### `20251115000000-demo-people.js`
+Los seeders deben ejecutarse en el siguiente orden:
 
-Crea **50 personas/pacientes** con datos variados.
+1. **Personas (PeopleAttended)**
+   ```bash
+   npx sequelize-cli db:seed --seed 20251115000000-demo-people.js
+   ```
 
-#### Datos generados:
-- **50 Personas** (tabla `PeopleAttendeds`)
-  - Nombres y apellidos en español
-  - Documentos únicos (Cédula, RIF, Pasaporte, Otro)
-  - Fechas de nacimiento (18-80 años)
-  - Géneros variados (M, F, O)
-  - Teléfonos, emails y direcciones generados
-  - Contactos de emergencia
-  - 20% con alergias registradas
-  - 90% activos, 10% inactivos
+2. **Profesionales (Professionals y Users)**
+   ```bash
+   npx sequelize-cli db:seed --seed 20241116000000-demo-professionals.js
+   ```
 
-### `20241116000000-demo-professionals.js`
+3. **Unidades de Atención (CareUnits)**
+   ```bash
+   npx sequelize-cli db:seed --seed 20251116000000-demo-care-units.js
+   ```
 
-Crea **20 profesionales** con sus usuarios asociados.
+4. **Agendas (Schedules)**
+   ```bash
+   npx sequelize-cli db:seed --seed 20251119000000-demo-schedules.js
+   ```
 
-#### Datos generados:
-- **20 Usuarios** (tabla `Users`)
-  - Usernames únicos (ej: `juangarcia1`, `mariarodriguez2`)
-  - Emails únicos (ej: `juan.garcia1@hospital.com`)
-  - Contraseñas hasheadas (hash de ejemplo)
-  - Estado activo
+5. **Citas (Appointments)**
+   ```bash
+   npx sequelize-cli db:seed --seed 20251120000000-demo-appointments.js
+   ```
 
-- **20 Profesionales** (tabla `Professionals`)
-  - Nombres y apellidos variados
-  - Registros profesionales únicos (`MP-00001` a `MP-00020`)
-  - 10 especialidades diferentes (duplicadas para cubrir 20 registros):
-    - Cardiología
-    - Pediatría
-    - Traumatología
-    - Dermatología
-    - Neurología
-    - Oftalmología
-    - Ginecología
-    - Psiquiatría
-    - Medicina General
-    - Odontología
-  - Emails únicos
-  - Teléfonos venezolanos de ejemplo
-  - 2 de cada 3 tienen agenda habilitada
-  - Estado activo
+6. **Episodios con Notas Clínicas y Diagnósticos** ⭐ NUEVO
+   ```bash
+   npx sequelize-cli db:seed --seed 20251121000000-demo-episodes.js
+   ```
 
-### `20251116000000-demo-care-units.js`
+## Ejecutar Todos los Seeders
 
-Crea **10 unidades de atención** médica.
+Para ejecutar todos los seeders en orden:
 
-#### Datos generados:
-- **10 Unidades** (tabla `CareUnits`)
-  - Nombres descriptivos
-  - Tipos variados (Consulta Externa, Emergencia, Hospitalización, etc.)
-  - Direcciones completas
-  - Teléfonos de contacto
-  - Horarios de atención
-  - Todas activas
-
-### `20251119000000-demo-schedules.js`
-
-Crea **10 agendas** para profesionales.
-
-#### Datos generados:
-- **10 Agendas** (tabla `Schedules`)
-  - Distribuidas entre profesionales (1-10)
-  - Asignadas a unidades (1-10)
-  - Fechas en diciembre 2025
-  - Horarios variados (7:00 - 19:00)
-  - Capacidades entre 8-30 personas
-  - Estados: abierta, cerrada, reservada
-
-### `20251120000000-demo-appointments.js` ✨ **NUEVO**
-
-Crea **30 citas** con **9 registros de historial** de cambios.
-
-#### Datos generados:
-- **30 Citas** (tabla `Appointments`)
-  - Distribuidas en el tiempo (pasadas, presentes, futuras)
-  - Relacionadas con personas (1-50), profesionales (1-10), unidades (1-10)
-  - 70% vinculadas a agendas
-  - 20 motivos diferentes de consulta
-  - Observaciones variadas (traer exámenes, ayunas, etc.)
-  - Canales: Presencial y Virtual
-  - Estados variados según temporalidad:
-    - **Citas pasadas**: Cumplida, Cancelada, No asistió
-    - **Citas próximas/futuras**: Solicitada, Confirmada
-  - Duración: 30 minutos cada una
-  - Horarios: 8:00 - 16:00
-
-- **9 Registros de Historial** (tabla `AppointmentHistories`)
-  - Cambios de estado (Solicitada → Confirmada → Cumplida)
-  - Cambios de horario (reagendamientos)
-  - Cancelaciones con motivo
-  - Registros de inasistencia
-  - Múltiples cambios en algunas citas
-  - Razones detalladas de cada cambio
-
-## 🚀 Cómo Ejecutar los Seeders
-
-### Ejecutar todos los seeders:
 ```bash
 npx sequelize-cli db:seed:all
 ```
 
-### Ejecutar un seeder específico:
-```bash
-npx sequelize-cli db:seed --seed 20241116000000-demo-professionals.js
-```
+## Revertir Seeders
 
-### Ver estado de los seeders:
-```bash
-npx sequelize-cli db:seed:status
-```
+Para revertir el último seeder:
 
-### Deshacer el último seeder:
 ```bash
 npx sequelize-cli db:seed:undo
 ```
 
-### Deshacer un seeder específico:
-```bash
-npx sequelize-cli db:seed:undo --seed 20241116000000-demo-professionals.js
-```
+Para revertir todos los seeders:
 
-### Deshacer todos los seeders:
 ```bash
 npx sequelize-cli db:seed:undo:all
 ```
 
-## 📊 Ejemplo de Datos Generados
+## Datos Generados por el Seeder de Episodios
 
-### Usuario:
-```json
-{
-  "id": 1,
-  "username": "juangarcia1",
-  "email": "juan.garcia1@hospital.com",
-  "status": true
-}
+El seeder `20251121000000-demo-episodes.js` crea:
+
+- **30 Episodios** con diferentes estados (70% abiertos, 30% cerrados)
+- **1-3 Notas Clínicas por episodio** (promedio 60 notas)
+- **1-2 Diagnósticos por episodio** (promedio 45 diagnósticos)
+
+### Tipos de Episodios
+- Consulta
+- Procedimiento
+- Control
+- Urgencia
+
+### Estados
+- Abierto
+- Cerrado
+
+### Diagnósticos Incluidos
+Se utilizan códigos CIE-10 reales para diagnósticos comunes:
+- J06.9 - Infección aguda de las vías respiratorias superiores
+- R10.4 - Dolores abdominales
+- I10 - Hipertensión esencial
+- E11.9 - Diabetes mellitus
+- M54.5 - Dolor lumbar
+- Y muchos más...
+
+## Notas Importantes
+
+⚠️ **Dependencias:**
+- El seeder de episodios requiere que existan:
+  - Al menos 30 personas activas (de `demo-people.js`)
+  - Al menos 15 profesionales activos (de `demo-professionals.js`)
+
+⚠️ **Orden de Eliminación:**
+Al revertir seeders, se debe respetar el orden inverso de creación para evitar errores de integridad referencial.
+
+## Verificación de Datos
+
+Después de ejecutar los seeders, puedes verificar los datos:
+
+```sql
+-- Contar episodios
+SELECT COUNT(*) FROM Episodes;
+
+-- Contar notas clínicas
+SELECT COUNT(*) FROM ClinicalNotes;
+
+-- Contar diagnósticos
+SELECT COUNT(*) FROM Diagnoses;
+
+-- Ver episodios con sus relaciones
+SELECT 
+  e.id,
+  e.type,
+  e.status,
+  p.names,
+  p.surNames,
+  COUNT(DISTINCT cn.id) as num_notas,
+  COUNT(DISTINCT d.id) as num_diagnosticos
+FROM Episodes e
+JOIN PeopleAttendeds p ON e.peopleId = p.id
+LEFT JOIN ClinicalNotes cn ON e.id = cn.episodeId
+LEFT JOIN Diagnoses d ON e.id = d.episodeId
+GROUP BY e.id;
 ```
-
-### Profesional:
-```json
-{
-  "id": 1,
-  "userId": 1,
-  "names": "Juan",
-  "surNames": "García Pérez",
-  "professionalRegister": "MP-00001",
-  "specialty": "Cardiología",
-  "email": "juan.garcia1@hospital.com",
-  "phone": "+584121000000",
-  "scheduleEnabled": true,
-  "status": true
-}
-```
-
-### Cita (Appointment):
-```json
-{
-  "id": 1,
-  "peopleId": 1,
-  "professionalId": 1,
-  "unitId": 1,
-  "scheduleId": 1,
-  "startTime": "2025-12-15T10:00:00.000Z",
-  "endTime": "2025-12-15T10:30:00.000Z",
-  "channel": "Presencial",
-  "status": "Confirmada",
-  "reason": "Consulta general de control",
-  "observations": "Paciente en ayunas"
-}
-```
-
-### Historial de Cita (AppointmentHistory):
-```json
-{
-  "id": 1,
-  "appointmentId": 1,
-  "oldStatus": "Solicitada",
-  "newStatus": "Confirmada",
-  "oldStartTime": null,
-  "newStartTime": null,
-  "oldEndTime": null,
-  "newEndTime": null,
-  "changeReason": "Confirmación del paciente vía telefónica",
-  "changedAt": "2025-12-10T15:30:00.000Z"
-}
-```
-
-## ⚠️ Importante
-
-### Orden de Ejecución Correcto
-
-Los seeders **deben ejecutarse en este orden** debido a las dependencias de claves foráneas:
-
-1. ✅ `20251115000000-demo-people.js` - Personas/Pacientes (sin dependencias)
-2. ✅ `20241116000000-demo-professionals.js` - Profesionales (crea usuarios primero)
-3. ✅ `20251116000000-demo-care-units.js` - Unidades de Atención (sin dependencias)
-4. ✅ `20251119000000-demo-schedules.js` - Agendas (depende de profesionales y unidades)
-5. ✅ `20251120000000-demo-appointments.js` - Citas e Historial (depende de todo lo anterior)
-
-### Rollback
-
-- El `down` de cada seeder **elimina en orden inverso** las dependencias
-- Para `appointments`: elimina historial primero, luego citas
-- Para `professionals`: elimina profesionales primero, luego usuarios
-
-### Notas Adicionales
-
-- **Emails únicos**: Los emails de profesionales terminan en `@hospital.com` para facilitar el rollback
-- **Registros únicos**: Todos los registros profesionales comienzan con `MP-` para facilitar el rollback
-- **No usar en producción**: Los datos son de prueba, las contraseñas son hashes de ejemplo
-- **Múltiples ejecuciones**: Algunos seeders pueden generar duplicados si se ejecutan múltiples veces
-
-## 🔧 Crear Nuevos Seeders
-
-Para crear un nuevo seeder:
-
-```bash
-npx sequelize-cli seed:generate --name demo-appointments
-```
-
-Esto creará un archivo en `database/seeders/` con la estructura básica.
-
-## 📝 Notas de Desarrollo
-
-- Los seeders se ejecutan en orden alfabético por defecto
-- El timestamp en el nombre del archivo controla el orden de ejecución
-- Los seeders pueden ejecutarse múltiples veces (usa condiciones para evitar duplicados)
-- Usa `bulkInsert` para insertar múltiples registros de una vez
-- Usa `bulkDelete` en el método `down` para limpiar los datos

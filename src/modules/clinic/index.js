@@ -3,7 +3,7 @@ const casesRoutes = require('./routes');
 
 const router = Router();
 
-router.use('/cases', casesRoutes);
+router.use('/', casesRoutes);
 
 module.exports = router;
 
