@@ -29,11 +29,17 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'unitId',
         as: 'careUnit'
       });
+
+      Appointment.hasMany(models.AppointmentHistory, {
+        foreignKey: 'appointmentId',
+        as: 'history'
+      });
     }
   }
   Appointment.init({
     peopleId: DataTypes.INTEGER,
     professionalId: DataTypes.INTEGER,
+    scheduleId: DataTypes.INTEGER,
     unitId: DataTypes.INTEGER,
     startTime: DataTypes.DATE,
     endTime: DataTypes.DATE,

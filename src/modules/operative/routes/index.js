@@ -3,6 +3,7 @@ const peopleRoutes = require('./people.routes');
 const professionalRoutes = require('./professional.routes');
 const careUnitRoutes = require('./careUnit.routes');
 const scheduleRoutes = require('./schedule.routes');
+const appointmentRoutes = require('./appointment.routes');
 
 const router = Router();
 
@@ -18,6 +19,7 @@ router.use('/personas', peopleRoutes);
 router.use('/profesionales', professionalRoutes);
 router.use('/unid-atencion', careUnitRoutes);
 router.use('/agendas', scheduleRoutes);
+router.use('/citas', appointmentRoutes);
 
 module.exports = router;
 
