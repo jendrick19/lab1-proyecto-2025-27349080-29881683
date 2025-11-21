@@ -4,43 +4,30 @@ const db = require('../../../../database/models');
 const { Appointment, AppointmentHistory } = db.modules.operative;
 
 const findById = async (id) => {
-  return Appointment.findByPk(id);
+  return Appointment.findByPk(id, {
+    include: [
+      { model: db.modules.operative.PeopleAttended, as: 'peopleAttended' },
+      { model: db.modules.operative.Professional, as: 'professional' },
+      { model: db.modules.operative.Schedule, as: 'schedule' },
+      { model: db.modules.operative.CareUnit, as: 'careUnit' }
+    ]
+  });
 };
 
-const findAndCountAll = async ({ where, offset, limit, order, personaNombre, profesionalNombre }) => {
-  const include = [
+const findAndCountAll = async ({ where, offset, limit, order, include }) => {
+  const defaultInclude = [
     { model: db.modules.operative.PeopleAttended, as: 'peopleAttended' },
     { model: db.modules.operative.Professional, as: 'professional' },
     { model: db.modules.operative.Schedule, as: 'schedule' },
     { model: db.modules.operative.CareUnit, as: 'careUnit' }
   ];
 
-  // Filtro de nombre del paciente
-  if (personaNombre) {
-    include[0].where = {
-      [Op.or]: [
-        { names: { [Op.like]: `%${personaNombre}%` } },
-        { surNames: { [Op.like]: `%${personaNombre}%` } },
-      ]
-    };
-  }
-
-  // Filtro de nombre del profesional
-  if (profesionalNombre) {
-    include[1].where = {
-      [Op.or]: [
-        { names: { [Op.like]: `%${profesionalNombre}%` } },
-        { surNames: { [Op.like]: `%${profesionalNombre}%` } },
-      ]
-    };
-  }
-
   return Appointment.findAndCountAll({
     where,
     offset,
     limit,
     order,
-    include,
+    include: include || defaultInclude,
     distinct: true,
   });
 };

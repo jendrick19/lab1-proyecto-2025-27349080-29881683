@@ -63,6 +63,37 @@ const buildWhere = ({ paciente, profesional, estado, fechaDesde, fechaHasta, sch
   return where;
 };
 
+const buildInclude = ({ nombrePersona, nombreProfesional }) => {
+  const include = [
+    { model: db.modules.operative.PeopleAttended, as: 'peopleAttended' },
+    { model: db.modules.operative.Professional, as: 'professional' },
+    { model: db.modules.operative.Schedule, as: 'schedule' },
+    { model: db.modules.operative.CareUnit, as: 'careUnit' }
+  ];
+
+  // Filtro de nombre del paciente
+  if (nombrePersona) {
+    include[0].where = {
+      [Op.or]: [
+        { names: { [Op.like]: `%${nombrePersona}%` } },
+        { surNames: { [Op.like]: `%${nombrePersona}%` } },
+      ]
+    };
+  }
+
+  // Filtro de nombre del profesional
+  if (nombreProfesional) {
+    include[1].where = {
+      [Op.or]: [
+        { names: { [Op.like]: `%${nombreProfesional}%` } },
+        { surNames: { [Op.like]: `%${nombreProfesional}%` } },
+      ]
+    };
+  }
+
+  return include;
+};
+
 const listAppointments = async ({
   page,
   limit,
@@ -72,21 +103,21 @@ const listAppointments = async ({
 }) => {
   const { safePage, safeLimit, offset } = buildPaginationParams(page, limit);
 
-  // Extraer los nuevos filtros de nombre
+  // Extraer los filtros de nombre
   const { nombrePersona, nombreProfesional, ...rawFilters } = filters || {};
 
   const orderField = SORT_FIELDS[sortBy] || SORT_FIELDS.fecha;
   const orderDirection = sortOrder === 'desc' ? 'DESC' : 'ASC';
 
   const where = buildWhere(rawFilters);
+  const include = buildInclude({ nombrePersona, nombreProfesional });
 
   const { count, rows } = await appointmentRepository.findAndCountAll({
     where,
     offset,
     limit: safeLimit,
     order: [[orderField, orderDirection]],
-    personaNombre: nombrePersona,
-    profesionalNombre: nombreProfesional
+    include
   });
 
   return buildPaginationResponse(rows, count, safePage, safeLimit);
@@ -202,8 +233,6 @@ const createAppointment = async (appointmentData) => {
 };
 
 const updateAppointment = async (appointment, payload, changeReason = null) => {
-  const changes = {};
-  
   // Guardar valores anteriores para el historial
   const oldStatus = appointment.status;
   const oldStartTime = appointment.startTime;
@@ -212,7 +241,6 @@ const updateAppointment = async (appointment, payload, changeReason = null) => {
   // REGLA 2: Validar transición de estado si se cambia
   if (payload.status !== undefined && payload.status !== appointment.status) {
     validateStatusTransition(appointment.status, payload.status);
-    changes.status = payload.status;
   }
 
   // REGLA 1: Verificar solapamiento si cambian horarios o scheduleId
@@ -237,29 +265,19 @@ const updateAppointment = async (appointment, payload, changeReason = null) => {
     }
   }
 
-  if (payload.startTime !== undefined) changes.startTime = payload.startTime;
-  if (payload.endTime !== undefined) changes.endTime = payload.endTime;
-  if (payload.scheduleId !== undefined) changes.scheduleId = payload.scheduleId;
-  if (payload.reason !== undefined) changes.reason = payload.reason;
-  if (payload.channel !== undefined) changes.channel = payload.channel;
-  if (payload.observations !== undefined) changes.observations = payload.observations;
-  if (payload.peopleId !== undefined) changes.peopleId = payload.peopleId;
-  if (payload.professionalId !== undefined) changes.professionalId = payload.professionalId;
-  if (payload.unitId !== undefined) changes.unitId = payload.unitId;
-
-  // Actualizar la cita
-  await appointmentRepository.update(appointment, changes);
+  // Actualizar la cita (el payload ya viene mapeado del controlador)
+  await appointmentRepository.update(appointment, payload);
 
   // REGLA 3: Registrar historial de cambios antes de recargar
   const historyChanges = {};
-  if (changes.status !== undefined) {
-    historyChanges.status = changes.status;
+  if (payload.status !== undefined) {
+    historyChanges.status = payload.status;
   }
-  if (changes.startTime !== undefined) {
-    historyChanges.startTime = changes.startTime;
+  if (payload.startTime !== undefined) {
+    historyChanges.startTime = payload.startTime;
   }
-  if (changes.endTime !== undefined) {
-    historyChanges.endTime = changes.endTime;
+  if (payload.endTime !== undefined) {
+    historyChanges.endTime = payload.endTime;
   }
 
   if (Object.keys(historyChanges).length > 0) {

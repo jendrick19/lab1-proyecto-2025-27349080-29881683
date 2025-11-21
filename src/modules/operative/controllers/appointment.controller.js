@@ -93,14 +93,14 @@ const listHandler = async (req, res, next) => {
       },
     });
 
-    res.json({
+    return res.json({
       codigo: 200,
       mensaje: 'Lista de citas obtenida exitosamente',
       data: result.rows.map(mapModelToResponse),
       pagination: result.pagination,
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
@@ -108,45 +108,49 @@ const getHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
     const appointment = await getAppointmentById(id);
-    res.json({
+
+    return res.json({
       codigo: 200,
       mensaje: 'Cita encontrada',
       data: mapModelToResponse(appointment),
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
 const createHandler = async (req, res, next) => {
   try {
     const payload = mapRequestToModel(req.body);
+
     const appointment = await createAppointment(payload);
-    res.status(201).json({
+
+    return res.status(201).json({
       codigo: 201,
       mensaje: 'Cita creada exitosamente',
       data: mapModelToResponse(appointment),
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
 const updateHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const payload = mapRequestToModel(req.body);
     const appointment = await getAppointmentById(id);
-    // Permite recibir razonCambio del body para historial
+    const payload = mapRequestToModel(req.body);
     const razonCambio = req.body.razonCambio || null;
+
     const updated = await updateAppointment(appointment, payload, razonCambio);
-    res.json({
+
+    return res.json({
       codigo: 200,
       mensaje: 'Cita actualizada exitosamente',
       data: mapModelToResponse(updated),
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
@@ -154,12 +158,13 @@ const deleteHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
     await softDeleteAppointment(id);
-    res.status(200).json({
+
+    return res.status(200).json({
       codigo: 200,
       mensaje: 'Cita eliminada exitosamente',
     });
   } catch (error) {
-    next(error);
+    return next(error);
   }
 };
 
