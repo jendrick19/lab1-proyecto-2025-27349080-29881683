@@ -24,14 +24,25 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'episodeId',
         as: 'diagnosis'
       });
+      
     }
   }
   Episode.init({
-    peopleId: DataTypes.INTEGER,
+    peopleId: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
     openingDate: DataTypes.DATE,
     reason: DataTypes.STRING,
-    type: DataTypes.STRING,
-    status: DataTypes.STRING
+    type: {
+      type: DataTypes.ENUM('Consulta', 'Procedimiento', 'Control', 'Urgencia'),
+      allowNull: false
+    },
+    status: {
+      type: DataTypes.ENUM('Abierto', 'Cerrado'),
+      allowNull: false,
+      defaultValue: 'Abierto'
+    }
   }, {
     sequelize,
     modelName: 'Episode',
