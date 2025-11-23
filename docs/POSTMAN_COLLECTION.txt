@@ -1,0 +1,187 @@
+╔══════════════════════════════════════════════════════════════╗
+║         COLECCIÓN POSTMAN - NOTAS CLÍNICAS                   ║
+║  Copiar y pegar estos ejemplos en Postman/Thunder Client    ║
+╚══════════════════════════════════════════════════════════════╝
+
+BASE URL: http://localhost:3000/api/clinic/notas-clinicas
+
+═══════════════════════════════════════════════════════════════
+1️⃣  LISTAR TODAS LAS NOTAS
+═══════════════════════════════════════════════════════════════
+
+GET http://localhost:3000/api/clinic/notas-clinicas?page=1&limit=10
+
+Headers:
+Content-Type: application/json
+
+═══════════════════════════════════════════════════════════════
+2️⃣  OBTENER NOTA POR ID
+═══════════════════════════════════════════════════════════════
+
+GET http://localhost:3000/api/clinic/notas-clinicas/1
+
+Headers:
+Content-Type: application/json
+
+═══════════════════════════════════════════════════════════════
+3️⃣  CREAR NOTA CLÍNICA
+═══════════════════════════════════════════════════════════════
+
+POST http://localhost:3000/api/clinic/notas-clinicas
+
+Headers:
+Content-Type: application/json
+
+Body (raw JSON):
+{
+  "episodioId": 5,
+  "profesionalId": 3,
+  "fechaNota": "2024-11-22T14:30:00Z",
+  "subjetivo": "Paciente refiere dolor abdominal tipo cólico de 48 horas de evolución, localizado en epigastrio e hipocondrio derecho, que se irradia a la espalda. Intensidad 7/10. Asociado a náuseas y vómitos ocasionales. Niega fiebre, diarrea o sangrado digestivo.",
+  "objetivo": "PA: 125/80 mmHg, FC: 78 lpm, FR: 18 rpm, Temp: 36.8°C, Sat O2: 98%. Paciente consciente, orientado, colaborador. Abdomen: blando, depresible, doloroso a la palpación profunda en epigastrio e hipocondrio derecho, Murphy positivo. Ruidos hidroaéreos presentes.",
+  "analisis": "Paciente masculino de 45 años con cuadro clínico compatible con COLECISTITIS AGUDA. Hallazgos sugestivos de inflamación vesicular. Factores de riesgo: antecedentes de colelitiasis.",
+  "plan": "1. Ayuno absoluto NPO\n2. Hidratación parenteral: SSN 0.9% 1000cc IV c/8h\n3. Analgesia: Metamizol 1g IV c/8h\n4. Antiemético: Metoclopramida 10mg IV c/8h\n5. Estudios complementarios: Hemograma completo, Ecografía abdominal\n6. Interconsulta con Cirugía General"
+}
+
+═══════════════════════════════════════════════════════════════
+4️⃣  ACTUALIZAR NOTA (CREAR NUEVA VERSIÓN)
+═══════════════════════════════════════════════════════════════
+
+PATCH http://localhost:3000/api/clinic/notas-clinicas/1
+
+Headers:
+Content-Type: application/json
+
+Body (raw JSON):
+{
+  "subjetivo": "Paciente refiere mejoría significativa del dolor abdominal, ahora de intensidad 3/10. Tolera vía oral con líquidos claros sin náuseas ni vómitos. Afebril las últimas 24 horas.",
+  "objetivo": "PA: 120/75 mmHg, FC: 72 lpm, Temp: 36.5°C. Paciente en mejor estado general. Abdomen: blando, depresible, levemente doloroso a la palpación superficial en hipocondrio derecho, Murphy negativo.",
+  "analisis": "Evolución FAVORABLE de colecistitis aguda. Respuesta adecuada al tratamiento médico. Persiste leve dolor residual compatible con proceso inflamatorio en resolución.",
+  "plan": "1. Continuar dieta blanda, fraccionada\n2. Omeprazol 20mg VO c/12h por 14 días\n3. Analgesia: Paracetamol 500mg VO c/8h PRN\n4. Control ambulatorio en 7 días"
+}
+
+═══════════════════════════════════════════════════════════════
+5️⃣  LISTAR NOTAS POR EPISODIO
+═══════════════════════════════════════════════════════════════
+
+GET http://localhost:3000/api/clinic/notas-clinicas/episodio/5?page=1&limit=10
+
+Headers:
+Content-Type: application/json
+
+═══════════════════════════════════════════════════════════════
+6️⃣  LISTAR NOTAS POR PROFESIONAL
+═══════════════════════════════════════════════════════════════
+
+GET http://localhost:3000/api/clinic/notas-clinicas/profesional/3?page=1&limit=10
+
+Headers:
+Content-Type: application/json
+
+═══════════════════════════════════════════════════════════════
+7️⃣  BUSCAR POR RANGO DE FECHAS
+═══════════════════════════════════════════════════════════════
+
+GET http://localhost:3000/api/clinic/notas-clinicas/rango-fechas?fechaDesde=2024-11-01&fechaHasta=2024-11-30&page=1&limit=20
+
+Headers:
+Content-Type: application/json
+
+═══════════════════════════════════════════════════════════════
+8️⃣  VER HISTORIAL DE VERSIONES
+═══════════════════════════════════════════════════════════════
+
+GET http://localhost:3000/api/clinic/notas-clinicas/1/versiones
+
+Headers:
+Content-Type: application/json
+
+═══════════════════════════════════════════════════════════════
+9️⃣  OBTENER ÚLTIMA VERSIÓN
+═══════════════════════════════════════════════════════════════
+
+GET http://localhost:3000/api/clinic/notas-clinicas/1/version-actual
+
+Headers:
+Content-Type: application/json
+
+═══════════════════════════════════════════════════════════════
+🔟 COMPARAR DOS VERSIONES
+═══════════════════════════════════════════════════════════════
+
+GET http://localhost:3000/api/clinic/notas-clinicas/1/comparar?version1=1&version2=2
+
+Headers:
+Content-Type: application/json
+
+═══════════════════════════════════════════════════════════════
+1️⃣1️⃣  OBTENER VERSIÓN ESPECÍFICA
+═══════════════════════════════════════════════════════════════
+
+GET http://localhost:3000/api/clinic/notas-clinicas/version/1
+
+Headers:
+Content-Type: application/json
+
+═══════════════════════════════════════════════════════════════
+📊 FILTROS DISPONIBLES
+═══════════════════════════════════════════════════════════════
+
+GET http://localhost:3000/api/clinic/notas-clinicas?
+  page=1&
+  limit=10&
+  sortBy=fecha&
+  sortOrder=desc&
+  episodio=5&
+  profesional=3&
+  fechaDesde=2024-11-01&
+  fechaHasta=2024-11-30
+
+Parámetros:
+- page: Número de página (default: 1)
+- limit: Elementos por página 1-100 (default: 20)
+- sortBy: fecha | episodio | profesional | createdAt
+- sortOrder: asc | desc
+- episodio: ID del episodio
+- profesional: ID del profesional
+- fechaDesde: Fecha inicio (YYYY-MM-DD)
+- fechaHasta: Fecha fin (YYYY-MM-DD)
+
+═══════════════════════════════════════════════════════════════
+🎯 VARIABLES DE ENTORNO SUGERIDAS PARA POSTMAN
+═══════════════════════════════════════════════════════════════
+
+{
+  "baseUrl": "http://localhost:3000",
+  "clinicPath": "/api/clinic",
+  "episodeId": 5,
+  "professionalId": 3,
+  "noteId": 1,
+  "versionId": 1,
+  "version2Id": 2
+}
+
+Uso en Postman:
+{{baseUrl}}{{clinicPath}}/notas-clinicas/{{noteId}}
+
+═══════════════════════════════════════════════════════════════
+💡 TIPS
+═══════════════════════════════════════════════════════════════
+
+1. Ejecuta primero el seeder para tener datos de prueba:
+   cd database/seeders
+   bash run-seeders.sh
+
+2. Los campos SOAP (subjetivo, objetivo, analisis, plan) 
+   requieren mínimo 10 caracteres
+
+3. Al actualizar una nota, siempre se crea una NUEVA VERSIÓN
+   (nunca se modifica una versión existente)
+
+4. El episodio debe estar ABIERTO para crear/editar notas
+
+5. El profesional debe estar ACTIVO
+
+═══════════════════════════════════════════════════════════════
+
+

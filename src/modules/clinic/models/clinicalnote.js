@@ -17,7 +17,7 @@ module.exports = (sequelize, DataTypes) => {
 
       ClinicalNote.belongsTo(models.Episode, {
         foreignKey: 'episodeId',
-        as: 'ClinicalNote'
+        as: 'episode'
       });
 
       ClinicalNote.hasMany(models.ClinicalNoteVersion, {

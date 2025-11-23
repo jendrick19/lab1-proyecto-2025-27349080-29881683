@@ -65,6 +65,16 @@ else
 fi
 echo ""
 
+echo "7️⃣  Creando versiones de notas clínicas (contenido SOAP)..."
+npx sequelize-cli db:seed --seed 20251122000000-demo-clinical-note-versions.js
+if [ $? -eq 0 ]; then
+    echo "✅ Versiones de notas clínicas creadas"
+else
+    echo "❌ Error al crear versiones de notas clínicas"
+    exit 1
+fi
+echo ""
+
 echo "🎉 ¡Todos los seeders ejecutados exitosamente!"
 echo ""
 echo "📊 Resumen de datos creados:"
@@ -76,4 +86,5 @@ echo "   - Citas"
 echo "   - 30 episodios"
 echo "   - ~60 notas clínicas"
 echo "   - ~45 diagnósticos"
+echo "   - ~42 versiones de notas clínicas (con contenido SOAP completo)"
 
