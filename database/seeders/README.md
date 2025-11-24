@@ -36,6 +36,13 @@ Los seeders deben ejecutarse en el siguiente orden:
    npx sequelize-cli db:seed --seed 20251121000000-demo-episodes.js
    ```
 
+7. **Diagnósticos (Opcional - Seeder Independiente)** 🆕
+   ```bash
+   npx sequelize-cli db:seed --seed 20251123000000-demo-diagnosis.js
+   ```
+   > ⚠️ **Nota**: Este seeder es opcional. El seeder de episodios (paso 6) ya crea diagnósticos básicos.
+   > Usa este seeder si quieres reemplazar o agregar más diagnósticos con códigos CIE-10 completos.
+
 ## Ejecutar Todos los Seeders
 
 Para ejecutar todos los seeders en orden:
@@ -84,6 +91,51 @@ Se utilizan códigos CIE-10 reales para diagnósticos comunes:
 - E11.9 - Diabetes mellitus
 - M54.5 - Dolor lumbar
 - Y muchos más...
+
+## Seeder Independiente de Diagnósticos
+
+El seeder `20251123000000-demo-diagnosis.js` es un seeder especializado que:
+
+### Características:
+- ✅ **40+ códigos CIE-10** organizados por categoría
+- ✅ **Diagnósticos principales y secundarios** (solo 1 principal por episodio)
+- ✅ **Tipos**: Presuntivo o Definitivo
+- ✅ **1-3 diagnósticos por episodio** (aleatorio)
+- ✅ **Sin duplicados** por episodio
+
+### Categorías de CIE-10 incluidas:
+- 🫁 **Respiratorias**: J06.9, J00, J18.9, J45.9...
+- ❤️ **Cardiovasculares**: I10, I20.9, I25.1, I50.9...
+- 🩺 **Metabólicas**: E11.9, E78.5, E66.9...
+- 😣 **Dolor/Síntomas**: R10.4, R51, M54.5, R07.4...
+- 🍽️ **Gastrointestinales**: K21.9, K29.7, K59.0...
+- 🧠 **Salud Mental**: F41.9, F32.9...
+- 👁️ **Oftalmología**: H52.1, H52.4...
+- 🏥 **Controles**: Z00.0, Z09, Z01.8...
+
+### Cuándo usar este seeder:
+
+**Opción 1 - Datos completos desde el inicio:**
+```bash
+# Ejecutar seeder de episodios (incluye diagnósticos básicos)
+npx sequelize-cli db:seed --seed 20251121000000-demo-episodes.js
+```
+
+**Opción 2 - Reemplazar con diagnósticos completos:**
+```bash
+# 1. Ejecutar seeder de episodios SIN ejecutar el de diagnósticos
+# 2. Borrar diagnósticos básicos
+DELETE FROM Diagnoses;
+
+# 3. Ejecutar seeder de diagnósticos completo
+npx sequelize-cli db:seed --seed 20251123000000-demo-diagnosis.js
+```
+
+**Opción 3 - Solo diagnósticos (episodios ya existen):**
+```bash
+# Si ya tienes episodios y quieres agregarles diagnósticos
+npx sequelize-cli db:seed --seed 20251123000000-demo-diagnosis.js
+```
 
 ## Notas Importantes
 
