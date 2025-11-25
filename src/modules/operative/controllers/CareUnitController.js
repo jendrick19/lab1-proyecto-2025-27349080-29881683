@@ -4,7 +4,7 @@ const {
   createCareUnit,
   updateCareUnit,
   softDeleteCareUnit,
-} = require('../services/careUnit.service');
+} = require('../services/CareUnitService');
 
 const mapModelToResponse = (careUnit) => {
   if (!careUnit) {

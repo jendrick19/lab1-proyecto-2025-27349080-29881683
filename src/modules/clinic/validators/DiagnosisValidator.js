@@ -4,7 +4,7 @@ const {
   validateIdParam,
   validatePagination,
   validateSorting,
-} = require('../../../shared/validators/common.validator');
+} = require('../../../shared/validators/CommonValidator');
 const { validateAndNormalizeCIE10Code } = require('../../../shared/utils/CIE10Helper');
 const db = require('../../../../database/models');
 

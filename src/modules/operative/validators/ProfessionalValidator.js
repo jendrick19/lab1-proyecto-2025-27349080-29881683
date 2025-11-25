@@ -13,7 +13,7 @@ const {
   validatePagination,
   validateSorting,
   validateStatusQuery,
-} = require('../../../shared/validators/common.validator');
+} = require('../../../shared/validators/CommonValidator');
 
 const ALLOWED_SPECIALTIES = [
   'Cardiología',

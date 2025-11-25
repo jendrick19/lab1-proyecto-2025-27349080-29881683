@@ -13,12 +13,9 @@ const {
   validatePagination,
   validateSorting,
   validateStatusQuery,
-} = require('../../../shared/validators/common.validator');
+} = require('../../../shared/validators/CommonValidator');
 
 
-/**
- * Validación personalizada para verificar si el documento ya existe
- */
 const checkDocumentUniqueness = async (value, { req }) => {
   const { Op } = require('sequelize');
   const db = require('../../../../database/models');
@@ -28,7 +25,6 @@ const checkDocumentUniqueness = async (value, { req }) => {
     documentId: value,
   };
 
-  // Si es una actualización, excluir el registro actual
   if (req.params?.id) {
     where.id = { [Op.ne]: req.params.id };
   }
@@ -42,9 +38,6 @@ const checkDocumentUniqueness = async (value, { req }) => {
   return true;
 };
 
-/**
- * Validaciones para crear una persona
- */
 const validateCreate = [
   body('id')
     .notEmpty().withMessage('El ID es requerido')
@@ -101,10 +94,6 @@ const validateCreate = [
   handleValidationErrors,
 ];
 
-/**
- * Validaciones para actualizar una persona
- * Los campos son opcionales, pero si se envían deben ser válidos
- */
 const validateUpdate = [
   validateIdParam(),
 
@@ -159,17 +148,12 @@ const validateUpdate = [
   handleValidationErrors,
 ];
 
-/**
- * Validaciones para obtener/eliminar una persona por ID
- */
+
 const validateId = [
   validateIdParam(),
   handleValidationErrors,
 ];
 
-/**
- * Validaciones para listar personas (query params)
- */
 const validateList = [
   ...validatePagination(),
   ...validateSorting(['nombres', 'apellidos', 'fechaNacimiento', 'createdAt']),

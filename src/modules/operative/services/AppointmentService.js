@@ -1,10 +1,9 @@
 const { Op } = require('sequelize');
-const appointmentRepository = require('../repositories/appointment.repository');
-const { buildPaginationParams, buildPaginationResponse } = require('../../../shared/utils/pagination.helper');
+const appointmentRepository = require('../repositories/AppointmentRepository');
+const { buildPaginationParams, buildPaginationResponse } = require('../../../shared/utils/paginationHelper');
 const { NotFoundError, BusinessLogicError, ConflictError } = require('../../../shared/errors/CustomErrors');
 const db = require('../../../../database/models');
 
-// Estados válidos y transiciones permitidas
 const VALID_STATUSES = ['Solicitada', 'Confirmada', 'Cumplida', 'Cancelada', 'No asistio'];
 
 const ALLOWED_TRANSITIONS = {
@@ -133,7 +132,6 @@ const getAppointmentById = async (id) => {
   return appointment;
 };
 
-// REGLA 1: No solapar con agenda (Schedule)
 const checkScheduleOverlap = async (scheduleId, startTime, endTime, excludeAppointmentId = null) => {
   if (!scheduleId || !startTime || !endTime) {
     return false;
@@ -149,7 +147,6 @@ const checkScheduleOverlap = async (scheduleId, startTime, endTime, excludeAppoi
   return overlappingAppointment !== null;
 };
 
-// REGLA 2: Validar transición de estados
 const validateStatusTransition = (oldStatus, newStatus) => {
   if (!VALID_STATUSES.includes(newStatus)) {
     throw new BusinessLogicError(`Estado "${newStatus}" no es válido. Estados válidos: ${VALID_STATUSES.join(', ')}`);
@@ -171,7 +168,6 @@ const validateStatusTransition = (oldStatus, newStatus) => {
   return true;
 };
 
-// REGLA 3: Registrar historial de cambios
 const recordHistory = async (appointment, changes, changeReason) => {
   if (!changeReason) {
     return null;
@@ -211,12 +207,10 @@ const recordHistory = async (appointment, changes, changeReason) => {
 };
 
 const createAppointment = async (appointmentData) => {
-  // Estado por defecto
   if (!appointmentData.status) {
     appointmentData.status = 'Solicitada';
   }
 
-  // REGLA 1: Verificar solapamiento con agenda
   if (appointmentData.scheduleId && appointmentData.startTime && appointmentData.endTime) {
     const hasOverlap = await checkScheduleOverlap(
       appointmentData.scheduleId,
@@ -233,17 +227,14 @@ const createAppointment = async (appointmentData) => {
 };
 
 const updateAppointment = async (appointment, payload, changeReason = null) => {
-  // Guardar valores anteriores para el historial
   const oldStatus = appointment.status;
   const oldStartTime = appointment.startTime;
   const oldEndTime = appointment.endTime;
 
-  // REGLA 2: Validar transición de estado si se cambia
   if (payload.status !== undefined && payload.status !== appointment.status) {
     validateStatusTransition(appointment.status, payload.status);
   }
 
-  // REGLA 1: Verificar solapamiento si cambian horarios o scheduleId
   const scheduleId = payload.scheduleId !== undefined ? payload.scheduleId : appointment.scheduleId;
   const startTime = payload.startTime !== undefined ? payload.startTime : appointment.startTime;
   const endTime = payload.endTime !== undefined ? payload.endTime : appointment.endTime;
@@ -265,10 +256,8 @@ const updateAppointment = async (appointment, payload, changeReason = null) => {
     }
   }
 
-  // Actualizar la cita (el payload ya viene mapeado del controlador)
   await appointmentRepository.update(appointment, payload);
 
-  // REGLA 3: Registrar historial de cambios antes de recargar
   const historyChanges = {};
   if (payload.status !== undefined) {
     historyChanges.status = payload.status;

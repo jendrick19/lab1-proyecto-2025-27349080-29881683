@@ -5,13 +5,13 @@ const {
   createHandler,
   updateHandler,
   deleteHandler,
-} = require('../controllers/people.controller');
+} = require('../controllers/AppointmentController');
 const {
   validateCreate,
   validateUpdate,
   validateId,
   validateList,
-} = require('../validators/people.validator');
+} = require('../validators/AppointmentValidator');
 
 const router = Router();
 
@@ -22,3 +22,4 @@ router.patch('/:id', validateUpdate, updateHandler);
 router.delete('/:id', validateId, deleteHandler);
 
 module.exports = router;
+

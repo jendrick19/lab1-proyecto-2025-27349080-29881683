@@ -1,9 +1,9 @@
 const { Router } = require('express');
-const peopleRoutes = require('./people.routes');
-const professionalRoutes = require('./professional.routes');
-const careUnitRoutes = require('./careUnit.routes');
-const scheduleRoutes = require('./schedule.routes');
-const appointmentRoutes = require('./appointment.routes');
+const peopleRoutes = require('./PeopleRoutes');
+const professionalRoutes = require('./ProfessionalRoutes');
+const careUnitRoutes = require('./CareUnitRoutes');
+const scheduleRoutes = require('./ScheduleRoutes');
+const appointmentRoutes = require('./AppointmentRoutes');
 
 const router = Router();
 

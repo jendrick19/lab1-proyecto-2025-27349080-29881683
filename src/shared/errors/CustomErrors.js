@@ -1,6 +1,4 @@
-/**
- * Error base personalizado
- */
+
 class AppError extends Error {
   constructor(message, statusCode) {
     super(message);
@@ -11,10 +9,6 @@ class AppError extends Error {
   }
 }
 
-/**
- * Error 400 - Bad Request
- * Para errores de validación de datos de entrada
- */
 class ValidationError extends AppError {
   constructor(message = 'Datos de entrada inválidos') {
     super(message, 400);
@@ -22,10 +16,6 @@ class ValidationError extends AppError {
   }
 }
 
-/**
- * Error 404 - Not Found
- * Para recursos que no existen
- */
 class NotFoundError extends AppError {
   constructor(message = 'Recurso no encontrado') {
     super(message, 404);
@@ -33,10 +23,6 @@ class NotFoundError extends AppError {
   }
 }
 
-/**
- * Error 409 - Conflict
- * Para conflictos de recursos duplicados
- */
 class ConflictError extends AppError {
   constructor(message = 'El recurso ya existe') {
     super(message, 409);

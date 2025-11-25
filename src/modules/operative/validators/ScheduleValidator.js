@@ -3,11 +3,10 @@ const {
     handleValidationErrors,
     validateIdParam,
     validatePagination,
-} = require('../../../shared/validators/common.validator');
+} = require('../../../shared/validators/CommonValidator');
 
 const ALLOWED_STATUSES = ['abierta', 'cerrada', 'reservada'];
 
-// Validar que el profesional existe
 const checkProfessionalExists = async (value) => {
     const db = require('../../../../database/models');
     const { Professional } = db.modules.operative;
@@ -21,7 +20,6 @@ const checkProfessionalExists = async (value) => {
     return true;
 };
 
-// Validar que la unidad de atención existe
 const checkCareUnitExists = async (value) => {
     const db = require('../../../../database/models');
     const { CareUnit } = db.modules.operative;
@@ -35,7 +33,6 @@ const checkCareUnitExists = async (value) => {
     return true;
 };
 
-// Validar que fechaInicio sea anterior a fechaFin
 const validateDateRange = (value, { req }) => {
     const startTime = req.body.fechaInicio;
     const endTime = req.body.fechaFin;
@@ -154,7 +151,6 @@ const validateSearchByName = [
         .optional()
         .isInt({ min: 1 }).withMessage('El ID debe ser un número entero positivo'),
     
-    // Al menos uno debe estar presente
     query().custom((value, { req }) => {
         if (!req.query.nombre && !req.query.id) {
             throw new Error('Debe proporcionar al menos "nombre" o "id" para la búsqueda');

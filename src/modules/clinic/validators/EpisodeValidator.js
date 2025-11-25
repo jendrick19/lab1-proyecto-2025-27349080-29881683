@@ -4,7 +4,7 @@ const {
   validateIdParam,
   validatePagination,
   validateSorting,
-} = require('../../../shared/validators/common.validator');
+} = require('../../../shared/validators/CommonValidator');
 const db = require('../../../../database/models');
 
 const { PeopleAttended } = db.modules.operative;

@@ -2,24 +2,32 @@ const { Router } = require('express');
 const {
   listHandler,
   getHandler,
+  searchByPersonHandler,
   createHandler,
   updateHandler,
-  deleteHandler,
-} = require('../controllers/professional.controller');
+  closeHandler,
+} = require('../controllers/EpisodeController');
 const {
   validateCreate,
   validateUpdate,
   validateId,
   validateList,
-} = require('../validators/professional.validator');
+  validateSearchByPerson,
+} = require('../validators/EpisodeValidator');
+const { episodeDiagnosisRouter } = require('./DiagnosisRouter');
 
 const router = Router();
+
+router.get('/persona', validateSearchByPerson, searchByPersonHandler);
 
 router.get('/', validateList, listHandler);
 router.post('/', validateCreate, createHandler);
 router.get('/:id', validateId, getHandler);
 router.patch('/:id', validateUpdate, updateHandler);
-router.delete('/:id', validateId, deleteHandler);
+
+router.patch('/:id/cerrar', validateId, closeHandler);
+
+router.use('/', episodeDiagnosisRouter);
 
 module.exports = router;
 

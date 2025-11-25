@@ -1,6 +1,6 @@
 const { Op } = require('sequelize');
 const consentRepository = require('../repositories/ConsentRepository');
-const { buildPaginationParams, buildPaginationResponse } = require('../../../shared/utils/pagination.helper');
+const { buildPaginationParams, buildPaginationResponse } = require('../../../shared/utils/paginationHelper');
 const { NotFoundError, BusinessLogicError } = require('../../../shared/errors/CustomErrors');
 const db = require('../../../../database/models');
 
@@ -138,13 +138,10 @@ const createConsent = async (consentData) => {
     throw new BusinessLogicError('El tipo de procedimiento es requerido');
   }
 
-  // Validar que la persona existe
   await validatePeopleExists(consentData.peopleId);
 
-  // Validar método
   validateConsentMethod(consentData.method);
 
-  // Si no se proporciona fecha, usar la fecha actual
   if (!consentData.consentDate) {
     consentData.consentDate = new Date();
   }

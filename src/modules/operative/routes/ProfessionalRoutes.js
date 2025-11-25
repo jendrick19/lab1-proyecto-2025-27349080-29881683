@@ -1,19 +1,17 @@
 const { Router } = require('express');
-
 const {
   listHandler,
   getHandler,
   createHandler,
   updateHandler,
   deleteHandler,
-} = require('../controllers/careUnit.controller');
-
+} = require('../controllers/ProfessionalController');
 const {
   validateCreate,
   validateUpdate,
   validateId,
   validateList,
-} = require('../validators/careUnit.validator');
+} = require('../validators/ProfessionalValidator');
 
 const router = Router();
 
@@ -24,3 +22,4 @@ router.patch('/:id', validateUpdate, updateHandler);
 router.delete('/:id', validateId, deleteHandler);
 
 module.exports = router;
+

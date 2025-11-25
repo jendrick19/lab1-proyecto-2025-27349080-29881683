@@ -4,7 +4,7 @@ const {
   createAppointment,
   updateAppointment,
   softDeleteAppointment,
-} = require('../services/appointment.service');
+} = require('../services/AppointmentService');
 
 const mapModelToResponse = (appointment) => {
   if (!appointment) return null;
