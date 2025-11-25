@@ -8,7 +8,7 @@ const {
     getSchedulesByCareUnit,
     searchSchedulesByProfessionalName,
     searchSchedulesByCareUnitName,
-} = require('../services/schedule.service');
+} = require('../services/ScheduleService');
 
 const mapModelToResponse = (schedule) => {
     if (!schedule) {
@@ -179,10 +179,8 @@ const searchByProfessionalNameHandler = async (req, res, next) => {
         let schedules;
 
         if (id) {
-            // Buscar por ID de profesional
             schedules = await getSchedulesByProfessional(id);
         } else {
-            // Buscar por nombre
             schedules = await searchSchedulesByProfessionalName(nombre);
         }
 
@@ -202,10 +200,8 @@ const searchByCareUnitNameHandler = async (req, res, next) => {
         let schedules;
 
         if (id) {
-            // Buscar por ID de unidad
             schedules = await getSchedulesByCareUnit(id);
         } else {
-            // Buscar por nombre
             schedules = await searchSchedulesByCareUnitName(nombre);
         }
 

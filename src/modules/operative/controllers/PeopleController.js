@@ -4,7 +4,7 @@ const {
   createPerson,
   updatePerson,
   softDeletePerson,
-} = require('../services/people.service');
+} = require('../services/PeopleService');
 
 const mapModelToResponse = (person) => {
   if (!person) {

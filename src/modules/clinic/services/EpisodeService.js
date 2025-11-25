@@ -1,10 +1,9 @@
 const { Op } = require('sequelize');
-const episodeRepository = require('../repositories/episode.repository');
-const { buildPaginationParams, buildPaginationResponse } = require('../../../shared/utils/pagination.helper');
+const episodeRepository = require('../repositories/EpisodeRepository');
+const { buildPaginationParams, buildPaginationResponse } = require('../../../shared/utils/paginationHelper');
 const { NotFoundError, BusinessLogicError, ConflictError } = require('../../../shared/errors/CustomErrors');
 const db = require('../../../../database/models');
 
-// Estados válidos y transiciones permitidas
 const VALID_STATUSES = ['Abierto', 'Cerrado'];
 
 const ALLOWED_TRANSITIONS = {
@@ -93,7 +92,6 @@ const listEpisodes = async ({
 }) => {
   const { safePage, safeLimit, offset } = buildPaginationParams(page, limit);
 
-  // Extraer los filtros de nombre y documento
   const { nombrePaciente, documentoPaciente, ...rawFilters } = filters || {};
 
   const orderField = SORT_FIELDS[sortBy] || SORT_FIELDS.fecha;
@@ -153,7 +151,6 @@ const searchEpisodesByPatientDocument = async (documentType, documentId, { page,
   return buildPaginationResponse(rows, count, safePage, safeLimit);
 };
 
-// Validar transición de estados
 const validateStatusTransition = (oldStatus, newStatus) => {
   if (!VALID_STATUSES.includes(newStatus)) {
     throw new BusinessLogicError(`Estado "${newStatus}" no es válido. Estados válidos: ${VALID_STATUSES.join(', ')}`);
@@ -175,7 +172,6 @@ const validateStatusTransition = (oldStatus, newStatus) => {
   return true;
 };
 
-// Validar tipo de episodio
 const validateEpisodeType = (type) => {
   if (!VALID_TYPES.includes(type)) {
     throw new BusinessLogicError(`Tipo "${type}" no es válido. Tipos válidos: ${VALID_TYPES.join(', ')}`);
@@ -184,12 +180,10 @@ const validateEpisodeType = (type) => {
 };
 
 const createEpisode = async (episodeData) => {
-  // Validar que el paciente ID sea obligatorio
   if (!episodeData.peopleId) {
     throw new BusinessLogicError('El ID del paciente es requerido');
   }
 
-  // Validar que el paciente existe y está activo
   const peopleAttended = await db.modules.operative.PeopleAttended.findByPk(episodeData.peopleId);
   if (!peopleAttended) {
     throw new NotFoundError('Paciente no encontrado');
@@ -198,23 +192,19 @@ const createEpisode = async (episodeData) => {
     throw new BusinessLogicError('El paciente está inactivo');
   }
 
-  // Validar que el tipo sea obligatorio
   if (!episodeData.type) {
     throw new BusinessLogicError('El tipo de episodio es requerido');
   }
   validateEpisodeType(episodeData.type);
 
-  // Estado por defecto (obligatorio según migración)
   if (!episodeData.status) {
     episodeData.status = 'Abierto';
   }
 
-  // Validar que el estado inicial sea válido
   if (!VALID_STATUSES.includes(episodeData.status)) {
     throw new BusinessLogicError(`Estado "${episodeData.status}" no es válido. Estados válidos: ${VALID_STATUSES.join(', ')}`);
   }
 
-  // Fecha de apertura por defecto
   if (!episodeData.openingDate) {
     episodeData.openingDate = new Date();
   }
@@ -225,22 +215,18 @@ const createEpisode = async (episodeData) => {
 const updateEpisode = async (id, payload) => {
   const episode = await getEpisodeById(id);
 
-  // Validar transición de estado si se cambia
   if (payload.status !== undefined && payload.status !== episode.status) {
     validateStatusTransition(episode.status, payload.status);
   }
 
-  // Validar tipo de episodio si se cambia
   if (payload.type !== undefined && payload.type !== episode.type) {
     validateEpisodeType(payload.type);
   }
 
-  // No permitir cambiar el paciente una vez creado el episodio
   if (payload.peopleId !== undefined && payload.peopleId !== episode.peopleId) {
     throw new BusinessLogicError('No se puede cambiar el paciente de un episodio existente');
   }
 
-  // No permitir cambiar la fecha de apertura
   if (payload.openingDate !== undefined && payload.openingDate !== episode.openingDate) {
     throw new BusinessLogicError('No se puede cambiar la fecha de apertura de un episodio');
   }

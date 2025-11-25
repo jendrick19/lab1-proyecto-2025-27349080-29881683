@@ -2,23 +2,30 @@ const { Router } = require('express');
 const {
   listHandler,
   getHandler,
+  getByPeopleDocumentHandler,
+  countByPeopleDocumentHandler,
   createHandler,
   updateHandler,
   deleteHandler,
-} = require('../controllers/appointment.controller');
+} = require('../controllers/ConsentController');
 const {
   validateCreate,
   validateUpdate,
   validateId,
   validateList,
-} = require('../validators/appointment.validator');
+  validateByPeopleDocument,
+  validateCountByPeopleDocument,
+} = require('../validators/ConsentValidator');
 
 const router = Router();
+
+router.get('/persona', validateByPeopleDocument, getByPeopleDocumentHandler);
+router.get('/contar', validateCountByPeopleDocument, countByPeopleDocumentHandler);
 
 router.get('/', validateList, listHandler);
 router.post('/', validateCreate, createHandler);
 router.get('/:id', validateId, getHandler);
-router.patch('/:id', validateUpdate, updateHandler);
+router.put('/:id', validateUpdate, updateHandler);
 router.delete('/:id', validateId, deleteHandler);
 
 module.exports = router;

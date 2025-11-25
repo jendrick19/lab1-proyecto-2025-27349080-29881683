@@ -4,7 +4,7 @@ const {
   validateIdParam,
   validatePagination,
   validateSorting,
-} = require('../../../shared/validators/common.validator');
+} = require('../../../shared/validators/CommonValidator');
 const db = require('../../../../database/models');
 
 const { PeopleAttended, Professional, CareUnit, Schedule } = db.modules.operative;
@@ -12,7 +12,7 @@ const { PeopleAttended, Professional, CareUnit, Schedule } = db.modules.operativ
 const VALID_STATUSES = ['Solicitada', 'Confirmada', 'Cumplida', 'Cancelada', 'No asistio'];
 const VALID_CHANNELS = ['Presencial', 'Virtual'];
 
-// Validar que el paciente existe
+
 const checkPeopleExists = async (value) => {
   const person = await PeopleAttended.findByPk(value);
 
@@ -27,7 +27,6 @@ const checkPeopleExists = async (value) => {
   return true;
 };
 
-// Validar que el profesional existe
 const checkProfessionalExists = async (value) => {
   const professional = await Professional.findByPk(value);
 
@@ -42,7 +41,6 @@ const checkProfessionalExists = async (value) => {
   return true;
 };
 
-// Validar que la unidad de atención existe
 const checkCareUnitExists = async (value) => {
   const careUnit = await CareUnit.findByPk(value);
 
@@ -57,7 +55,6 @@ const checkCareUnitExists = async (value) => {
   return true;
 };
 
-// Validar que la agenda existe
 const checkScheduleExists = async (value) => {
   const schedule = await Schedule.findByPk(value);
 
@@ -68,7 +65,6 @@ const checkScheduleExists = async (value) => {
   return true;
 };
 
-// Validar que inicio sea anterior a fin
 const validateDateRange = (value, { req }) => {
   const startTime = req.body.inicio;
   const endTime = req.body.fin;
@@ -85,9 +81,6 @@ const validateDateRange = (value, { req }) => {
   return true;
 };
 
-/**
- * Validaciones para crear una cita
- */
 const validateCreate = [
   body('pacienteId')
     .notEmpty().withMessage('El ID del paciente es requerido')
@@ -141,10 +134,6 @@ const validateCreate = [
   handleValidationErrors,
 ];
 
-/**
- * Validaciones para actualizar una cita
- * Los campos son opcionales, pero si se envían deben ser válidos
- */
 const validateUpdate = [
   validateIdParam(),
 
@@ -205,17 +194,11 @@ const validateUpdate = [
   handleValidationErrors,
 ];
 
-/**
- * Validaciones para obtener/eliminar una cita por ID
- */
 const validateId = [
   validateIdParam(),
   handleValidationErrors,
 ];
 
-/**
- * Validaciones para listar citas (query params)
- */
 const validateList = [
   ...validatePagination(),
   ...validateSorting(['fecha', 'estado', 'paciente', 'profesional', 'createdAt']),
@@ -249,7 +232,6 @@ const validateList = [
   query('estado')
     .optional()
     .custom((value) => {
-      // Permitir un solo estado o múltiples estados separados por coma
       const estados = Array.isArray(value) ? value : [value];
       const invalidEstados = estados.filter(estado => !VALID_STATUSES.includes(estado));
       

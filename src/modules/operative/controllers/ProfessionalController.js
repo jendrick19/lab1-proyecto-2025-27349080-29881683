@@ -4,7 +4,7 @@ const {
   createProfessional,
   updateProfessional,
   softDeleteProfessional,
-} = require('../services/professional.service');
+} = require('../services/ProfessionalService');
 
 const mapModelToResponse = (professional) => {
   if (!professional) {
@@ -60,8 +60,6 @@ const mapUserFromRequest = (body) => {
     if (body.usuario.username !== undefined) userData.username = body.usuario.username;
     if (body.usuario.email !== undefined) userData.email = body.usuario.email;
     if (body.usuario.password !== undefined) {
-      // Aquí deberías hashear la contraseña
-      // Por ahora lo guardamos tal cual (en producción usar bcrypt)
       userData.passwordHash = body.usuario.password;
     }
     if (body.usuario.passwordHash !== undefined) userData.passwordHash = body.usuario.passwordHash;

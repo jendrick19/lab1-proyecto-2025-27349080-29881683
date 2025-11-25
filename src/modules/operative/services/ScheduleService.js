@@ -1,5 +1,5 @@
-const scheduleRepository = require('../repositories/schedule.repository');
-const { buildPaginationParams, buildPaginationResponse } = require('../../../shared/utils/pagination.helper');
+const scheduleRepository = require('../repositories/ScheduleRepository');
+const { buildPaginationParams, buildPaginationResponse } = require('../../../shared/utils/paginationHelper');
 const { NotFoundError, BusinessLogicError } = require('../../../shared/errors/CustomErrors');
 
 const ALLOWED_STATUSES = [

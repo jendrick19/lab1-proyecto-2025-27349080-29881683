@@ -16,18 +16,18 @@ if (config.use_env_variable) {
 }
 
 const modelFactories = [
-  require('../../src/modules/operative/models/appointment'),
-  require('../../src/modules/operative/models/appointmenthistory'),
-  require('../../src/modules/operative/models/careunit'),
-  require('../../src/modules/operative/models/peopleattended'),
-  require('../../src/modules/operative/models/professional'),
-  require('../../src/modules/operative/models/schedule'),
-  require('../../src/modules/clinic/models/clinicalnote'),
-  require('../../src/modules/clinic/models/clinicalnoteversion'),
-  require('../../src/modules/clinic/models/episode'),
-  require('../../src/modules/clinic/models/diagnosis'),
-  require('../../src/modules/clinic/models/consent'),
-  require('../../src/modules/platform/models/user'),
+  require('../../src/modules/operative/models/Appointment'),
+  require('../../src/modules/operative/models/AppointmentHistory'),
+  require('../../src/modules/operative/models/CareUnit'),
+  require('../../src/modules/operative/models/PeopleAttended'),
+  require('../../src/modules/operative/models/Professional'),
+  require('../../src/modules/operative/models/Schedule'),
+  require('../../src/modules/clinic/models/ClinicalNote'),
+  require('../../src/modules/clinic/models/ClinicalNoteVersion'),
+  require('../../src/modules/clinic/models/Episode'),
+  require('../../src/modules/clinic/models/Diagnosis'),
+  require('../../src/modules/clinic/models/Consent'),
+  require('../../src/modules/platform/models/User'),
 ];
 
 modelFactories.forEach(registerModel => {

@@ -1,6 +1,6 @@
 const { Op } = require('sequelize');
-const careUnitRepository = require('../repositories/careUnit.repository');
-const { buildPaginationParams, buildPaginationResponse } = require('../../../shared/utils/pagination.helper');
+const careUnitRepository = require('../repositories/CareUnitRepository');
+const { buildPaginationParams, buildPaginationResponse } = require('../../../shared/utils/paginationHelper');
 const { NotFoundError, BusinessLogicError } = require('../../../shared/errors/CustomErrors');
 const db = require('../../../../database/models');
 

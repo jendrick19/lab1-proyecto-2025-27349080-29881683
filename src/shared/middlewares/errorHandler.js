@@ -1,11 +1,6 @@
 const { AppError } = require('../errors/CustomErrors');
 
-/**
- * Middleware global de manejo de errores
- * Detecta el tipo de error y devuelve el código HTTP apropiado
- */
 const errorHandler = (err, req, res, next) => {
-  // Si es un error operacional personalizado
   if (err.isOperational) {
     return res.status(err.statusCode).json({
       codigo: err.statusCode,
@@ -14,7 +9,6 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Manejo de errores de Sequelize
   if (err.name === 'SequelizeUniqueConstraintError') {
     const field = err.errors[0]?.path || 'campo';
     const value = err.errors[0]?.value || '';
@@ -59,7 +53,6 @@ const errorHandler = (err, req, res, next) => {
     });
   }
 
-  // Error no manejado - 500
   console.error('ERROR NO MANEJADO:', err);
   
   return res.status(500).json({

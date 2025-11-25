@@ -25,21 +25,17 @@ const {
 
 const router = Router();
 
-// Rutas de búsqueda especializadas (deben ir antes de /:id)
 router.get('/buscar/codigo', validateSearchByCode, searchByCodeHandler);
 router.get('/tipo/:type', validateType, getByTypeHandler);
 
-// Rutas CRUD estándar
 router.get('/', validateList, listHandler);
 router.post('/', validateCreate, createHandler);
 router.get('/:id', validateId, getHandler);
 router.put('/:id', validateUpdate, updateHandler);
 router.delete('/:id', validateId, deleteHandler);
 
-// Router para rutas anidadas en episodios
 const episodeDiagnosisRouter = Router();
 
-// Rutas anidadas: /api/clinic/episodios/:episodeId/diagnosticos
 episodeDiagnosisRouter.get('/:episodeId/diagnosticos', validateEpisodeId, getByEpisodeHandler);
 episodeDiagnosisRouter.get('/:episodeId/diagnosticos/principal', validatePrincipalByEpisode, getPrincipalHandler);
 episodeDiagnosisRouter.put('/:episodeId/diagnosticos/:diagnosisId/principal', validateChangePrincipal, changePrincipalHandler);

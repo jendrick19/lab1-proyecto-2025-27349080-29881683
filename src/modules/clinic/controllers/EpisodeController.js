@@ -6,7 +6,7 @@ const {
   createEpisode,
   updateEpisode,
   closeEpisode,
-} = require('../services/episode.service');
+} = require('../services/EpisodeService');
 
 const mapModelToResponse = (episode) => {
   if (!episode) return null;
@@ -127,11 +127,9 @@ const searchByPersonHandler = async (req, res, next) => {
   try {
     const { nombre, tipoDocumento, numeroDocumento, page = 1, limit = 20, sortBy = 'fecha', sortOrder = 'desc' } = req.query;
 
-    // Determinar tipo de búsqueda basado en los parámetros recibidos
     let result;
 
     if (nombre) {
-      // Búsqueda por nombre
       result = await searchEpisodesByPatientName(nombre, {
         page,
         limit,
@@ -139,7 +137,6 @@ const searchByPersonHandler = async (req, res, next) => {
         sortOrder,
       });
     } else if (tipoDocumento && numeroDocumento) {
-      // Búsqueda por documento
       result = await searchEpisodesByPatientDocument(tipoDocumento, numeroDocumento, {
         page,
         limit,
@@ -218,3 +215,4 @@ module.exports = {
   updateHandler,
   closeHandler,
 };
+
