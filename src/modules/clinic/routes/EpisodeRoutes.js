@@ -2,7 +2,6 @@ const { Router } = require('express');
 const {
   listHandler,
   getHandler,
-  searchByPersonHandler,
   createHandler,
   updateHandler,
   closeHandler,
@@ -12,21 +11,23 @@ const {
   validateUpdate,
   validateId,
   validateList,
-  validateSearchByPerson,
 } = require('../validators/EpisodeValidator');
 const { episodeDiagnosisRouter } = require('./DiagnosisRouter');
 
 const router = Router();
 
-router.get('/persona', validateSearchByPerson, searchByPersonHandler);
-
+// Rutas CRUD estándar - usar query params para filtrar:
+// ?nombrePaciente=Juan, ?documentoPaciente=V12345678, ?paciente=1, ?estado=Abierto, ?tipo=Consulta
+// ?fechaDesde=2024-01-01, ?fechaHasta=2024-12-31
 router.get('/', validateList, listHandler);
 router.post('/', validateCreate, createHandler);
 router.get('/:id', validateId, getHandler);
 router.patch('/:id', validateUpdate, updateHandler);
 
+// Ruta especial para cerrar episodio
 router.patch('/:id/cerrar', validateId, closeHandler);
 
+// Rutas anidadas para diagnósticos del episodio
 router.use('/', episodeDiagnosisRouter);
 
 module.exports = router;

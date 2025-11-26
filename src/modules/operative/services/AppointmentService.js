@@ -1,6 +1,7 @@
 const { Op } = require('sequelize');
 const appointmentRepository = require('../repositories/AppointmentRepository');
 const { buildPaginationParams, buildPaginationResponse } = require('../../../shared/utils/paginationHelper');
+const { addDateRangeToWhere } = require('../../../shared/utils/dateRangeHelper');
 const { NotFoundError, BusinessLogicError, ConflictError } = require('../../../shared/errors/CustomErrors');
 const db = require('../../../../database/models');
 
@@ -49,15 +50,7 @@ const buildWhere = ({ paciente, profesional, estado, fechaDesde, fechaHasta, sch
     }
   }
 
-  if (fechaDesde || fechaHasta) {
-    where.startTime = {};
-    if (fechaDesde) {
-      where.startTime[Op.gte] = new Date(fechaDesde);
-    }
-    if (fechaHasta) {
-      where.startTime[Op.lte] = new Date(fechaHasta);
-    }
-  }
+  addDateRangeToWhere(where, 'startTime', fechaDesde, fechaHasta);
 
   return where;
 };
@@ -70,7 +63,6 @@ const buildInclude = ({ nombrePersona, nombreProfesional }) => {
     { model: db.modules.operative.CareUnit, as: 'careUnit' }
   ];
 
-  // Filtro de nombre del paciente
   if (nombrePersona) {
     include[0].where = {
       [Op.or]: [
@@ -80,7 +72,6 @@ const buildInclude = ({ nombrePersona, nombreProfesional }) => {
     };
   }
 
-  // Filtro de nombre del profesional
   if (nombreProfesional) {
     include[1].where = {
       [Op.or]: [
@@ -102,7 +93,6 @@ const listAppointments = async ({
 }) => {
   const { safePage, safeLimit, offset } = buildPaginationParams(page, limit);
 
-  // Extraer los filtros de nombre
   const { nombrePersona, nombreProfesional, ...rawFilters } = filters || {};
 
   const orderField = SORT_FIELDS[sortBy] || SORT_FIELDS.fecha;

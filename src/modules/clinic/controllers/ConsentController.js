@@ -56,6 +56,7 @@ const listHandler = async (req, res, next) => {
       sortBy = 'fecha',
       sortOrder = 'desc',
       persona,
+      documento,
       procedimiento,
       metodo,
       fechaDesde,
@@ -69,6 +70,7 @@ const listHandler = async (req, res, next) => {
       sortOrder,
       filters: {
         persona,
+        documento,
         procedimiento,
         metodo,
         fechaDesde,

@@ -88,6 +88,11 @@ const validateList = [
     .optional()
     .isInt({ min: 1 }).withMessage('El ID de la persona debe ser un número entero positivo'),
 
+  query('documento')
+    .optional()
+    .trim()
+    .isLength({ min: 5, max: 20 }).withMessage('El documento debe tener entre 5 y 20 caracteres'),
+
   query('procedimiento')
     .optional()
     .trim()
@@ -145,7 +150,5 @@ module.exports = {
   validateUpdate,
   validateId,
   validateList,
-  validateByPeopleDocument,
-  validateCountByPeopleDocument,
 };
 

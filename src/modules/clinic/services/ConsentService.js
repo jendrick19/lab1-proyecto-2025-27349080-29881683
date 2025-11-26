@@ -1,6 +1,7 @@
 const { Op } = require('sequelize');
 const consentRepository = require('../repositories/ConsentRepository');
 const { buildPaginationParams, buildPaginationResponse } = require('../../../shared/utils/paginationHelper');
+const { addDateRangeToWhere } = require('../../../shared/utils/dateRangeHelper');
 const { NotFoundError, BusinessLogicError } = require('../../../shared/errors/CustomErrors');
 const db = require('../../../../database/models');
 
@@ -38,7 +39,7 @@ const validatePeopleExists = async (peopleId) => {
   return people;
 };
 
-const buildWhere = ({ persona, procedimiento, metodo, fechaDesde, fechaHasta }) => {
+const buildWhere = ({ persona, documento, procedimiento, metodo, fechaDesde, fechaHasta }) => {
   const where = {};
 
   if (persona) {
@@ -55,15 +56,7 @@ const buildWhere = ({ persona, procedimiento, metodo, fechaDesde, fechaHasta }) 
     where.method = metodo;
   }
 
-  if (fechaDesde || fechaHasta) {
-    where.consentDate = {};
-    if (fechaDesde) {
-      where.consentDate[Op.gte] = new Date(fechaDesde);
-    }
-    if (fechaHasta) {
-      where.consentDate[Op.lte] = new Date(fechaHasta);
-    }
-  }
+  addDateRangeToWhere(where, 'consentDate', fechaDesde, fechaHasta);
 
   return where;
 };
@@ -82,11 +75,32 @@ const listConsents = async ({
 
   const where = buildWhere(filters || {});
 
+  // Si se filtra por documento, incluir la relación con PeopleAttended
+  const include = [];
+  if (filters && filters.documento) {
+    include.push({
+      model: db.modules.operative.PeopleAttended,
+      as: 'peopleAttended',
+      where: {
+        documentId: {
+          [Op.like]: `%${filters.documento}%`
+        }
+      },
+      required: true
+    });
+  } else {
+    include.push({
+      model: db.modules.operative.PeopleAttended,
+      as: 'peopleAttended'
+    });
+  }
+
   const { count, rows } = await consentRepository.findAndCountAll({
     where,
     offset,
     limit: safeLimit,
     order: [[orderField, orderDirection]],
+    include,
   });
 
   return buildPaginationResponse(rows, count, safePage, safeLimit);

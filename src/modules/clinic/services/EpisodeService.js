@@ -1,6 +1,7 @@
 const { Op } = require('sequelize');
 const episodeRepository = require('../repositories/EpisodeRepository');
 const { buildPaginationParams, buildPaginationResponse } = require('../../../shared/utils/paginationHelper');
+const { addDateRangeToWhere } = require('../../../shared/utils/dateRangeHelper');
 const { NotFoundError, BusinessLogicError, ConflictError } = require('../../../shared/errors/CustomErrors');
 const db = require('../../../../database/models');
 
@@ -44,15 +45,7 @@ const buildWhere = ({ paciente, estado, tipo, fechaDesde, fechaHasta }) => {
     }
   }
 
-  if (fechaDesde || fechaHasta) {
-    where.openingDate = {};
-    if (fechaDesde) {
-      where.openingDate[Op.gte] = new Date(fechaDesde);
-    }
-    if (fechaHasta) {
-      where.openingDate[Op.lte] = new Date(fechaHasta);
-    }
-  }
+  addDateRangeToWhere(where, 'openingDate', fechaDesde, fechaHasta);
 
   return where;
 };
