@@ -13,7 +13,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-            model: 'Episodes', // FK a la tabla Episodes
+            model: 'Episodes',
             key: 'id'
         },
         onUpdate: 'CASCADE',
@@ -26,7 +26,7 @@ module.exports = {
         type: Sequelize.TEXT
       },
       type: {
-        type: Sequelize.ENUM('Presuntivo', 'Definitivo'), 
+        type: Sequelize.ENUM('presuntivo', 'definitivo'), 
         allowNull: false,
         defaultValue: 'Presuntivo'
       },

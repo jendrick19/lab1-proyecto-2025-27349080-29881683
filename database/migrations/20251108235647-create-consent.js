@@ -21,7 +21,7 @@ module.exports = {
         defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       },
       method: {
-        type: Sequelize.ENUM('Firma digital', 'Aceptación verbal con registro'), 
+        type: Sequelize.ENUM('firma digital', 'aceptación verbal con registro'), 
         allowNull: false
       },
       fileId: {

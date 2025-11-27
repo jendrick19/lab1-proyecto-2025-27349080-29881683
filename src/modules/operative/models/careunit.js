@@ -24,7 +24,7 @@ module.exports = (sequelize, DataTypes) => {
   
   CareUnit.init({
     name: DataTypes.STRING,
-    type: DataTypes.STRING,
+    type: DataTypes.ENUM('sede', 'consultorio', 'servicio'),
     address: DataTypes.STRING,
     telephone: DataTypes.STRING,
     businessHours: DataTypes.STRING,

@@ -24,21 +24,11 @@ module.exports = (sequelize, DataTypes) => {
     }
   }
   Episode.init({
-    peopleId: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
+    peopleId: DataTypes.INTEGER,
     openingDate: DataTypes.DATE,
     reason: DataTypes.STRING,
-    type: {
-      type: DataTypes.ENUM('Consulta', 'Procedimiento', 'Control', 'Urgencia'),
-      allowNull: false
-    },
-    status: {
-      type: DataTypes.ENUM('Abierto', 'Cerrado'),
-      allowNull: false,
-      defaultValue: 'Abierto'
-    }
+    type: DataTypes.ENUM('consulta', 'procedimiento', 'control', 'urgencia'),
+    status: DataTypes.ENUM('abierto', 'cerrado'),
   }, {
     sequelize,
     modelName: 'Episode',

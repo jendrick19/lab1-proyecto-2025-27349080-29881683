@@ -10,7 +10,7 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       documentType: {
-        type: Sequelize.ENUM('Cedula', 'RIF', 'Pasaporte', 'Otro'),
+        type: Sequelize.ENUM('cedula', 'rif', 'pasaporte', 'otro'),
         allowNull: false
       },
       documentId: {
@@ -27,7 +27,7 @@ module.exports = {
         type: Sequelize.DATE
       },
       gender: {
-        type: Sequelize.ENUM('M', 'F', 'O')
+        type: Sequelize.ENUM('m', 'f', 'o')
       },
       phone: {
         type: Sequelize.STRING

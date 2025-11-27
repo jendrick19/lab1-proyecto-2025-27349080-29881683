@@ -23,7 +23,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-            model: 'Profesionals', // FK a la tabla Professionals
+            model: 'Profesionals',
             key: 'id'
         },
         onUpdate: 'CASCADE',
@@ -33,7 +33,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: true,
         references: {
-            model: 'Schedules', // FK a la tabla Schedules
+            model: 'Schedules',
             key: 'id'
         },
         onUpdate: 'CASCADE',
@@ -43,7 +43,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-            model: 'CareUnits', // FK a la tabla CareUnits
+            model: 'CareUnits',
             key: 'id'
         },
         onUpdate: 'CASCADE',
@@ -59,11 +59,11 @@ module.exports = {
         type: Sequelize.STRING
       },
       channel: {
-        type: Sequelize.ENUM('Presencial', 'Virtual'), 
+        type: Sequelize.ENUM('presencial', 'virtual'), 
         allowNull: false
       },
       status: {
-        type: Sequelize.ENUM('Solicitada', 'Confirmada', 'Cumplida', 'Cancelada', 'No asistio'),
+        type: Sequelize.ENUM('solicitada', 'confirmada', 'cumplida', 'cancelada', 'no asistio'),
         allowNull: false,
         defaultValue: 'Solicitada'
       },

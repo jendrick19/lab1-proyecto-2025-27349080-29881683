@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
     episodeId: DataTypes.INTEGER,
     code: DataTypes.STRING,
     description: DataTypes.TEXT,
-    type: DataTypes.STRING,
+    type: DataTypes.ENUM('presuntivo', 'definitivo'),
     isPrimary: DataTypes.BOOLEAN
   }, {
     sequelize,

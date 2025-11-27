@@ -44,8 +44,8 @@ module.exports = (sequelize, DataTypes) => {
     startTime: DataTypes.DATE,
     endTime: DataTypes.DATE,
     reason: DataTypes.STRING,
-    channel: DataTypes.STRING,
-    status: DataTypes.STRING,
+    channel: DataTypes.ENUM('presencial', 'virtual'),
+    status: DataTypes.ENUM('solicitada', 'confirmada', 'cumplida', 'no asistio'),
     observations: DataTypes.STRING
   }, {
     sequelize,

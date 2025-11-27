@@ -15,7 +15,7 @@ module.exports = {
         unique: true
       },
       type: {
-        type: Sequelize.ENUM('Sede', 'Consultorio', 'Servicio'), 
+        type: Sequelize.ENUM('sede', 'consultorio', 'servicio'), 
         allowNull: true
       },
       address: {

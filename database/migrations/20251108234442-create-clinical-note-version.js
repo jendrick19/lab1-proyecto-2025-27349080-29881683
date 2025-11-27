@@ -13,7 +13,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-            model: 'ClinicalNotes', // FK a la tabla ClinicalNotes (PLURAL)
+            model: 'ClinicalNotes',
             key: 'id'
         },
         onUpdate: 'CASCADE',

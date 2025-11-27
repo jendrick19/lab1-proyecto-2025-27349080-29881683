@@ -8,9 +8,9 @@ info:
     email: 1001.29881683.ucla@gmail.com
 
 servers:
-  - url: http://localhost:3000/api/v1
+  - url: http://localhost:3000/api
     description: Servidor de desarrollo
-  - url: https://api.clinica.com/v1
+  - url: https://api.clinica.com
     description: Servidor de producción
 
 tags:
@@ -28,6 +28,12 @@ tags:
     description: Gestión de citas médicas
   - name: Episodios
     description: Episodios de atención
+  - name: Notas Clínicas
+    description: Notas clínicas de los episodios
+  - name: Diagnósticos
+    description: Diagnósticos de los episodios
+  - name: Consentimientos
+    description: Consentimientos informados
   - name: Órdenes
     description: Órdenes médicas y resultados
   - name: Aseguradoras
@@ -231,7 +237,7 @@ paths:
           $ref: '#/components/responses/InternalServerError'
 
   # ==================== PERSONAS ====================
-  /personas:
+  /operative/personas:
     get:
       tags:
         - Personas
@@ -240,27 +246,32 @@ paths:
       parameters:
         - $ref: '#/components/parameters/PageParam'
         - $ref: '#/components/parameters/LimitParam'
-        - name: documento
+        - name: nombres
+          in: query
+          description: Buscar por nombres
+          schema:
+            type: string
+        - name: apellidos
+          in: query
+          description: Buscar por apellidos
+          schema:
+            type: string
+        - name: tipoDocumento
+          in: query
+          description: Filtrar por tipo de documento
+          schema:
+            type: string
+            enum: [Cedula, RIF, Pasaporte, Otro]
+        - name: numeroDocumento
           in: query
           description: Filtrar por número de documento
           schema:
             type: string
-        - name: edad
+        - name: estado
           in: query
-          description: Filtrar por edad
+          description: Filtrar por estado
           schema:
-            type: integer
-        - name: sexo
-          in: query
-          description: Filtrar por sexo
-          schema:
-            type: string
-            enum: [M, F, O]
-        - name: nombre
-          in: query
-          description: Buscar por nombre
-          schema:
-            type: string
+            type: boolean
         - name: sortBy
           in: query
           description: Campo por el cual ordenar los resultados
@@ -326,7 +337,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /personas/{id}:
+  /operative/personas/{id}:
     get:
       tags:
         - Personas
@@ -399,7 +410,7 @@ paths:
           $ref: '#/components/responses/InternalServerError'
 
   # ==================== PROFESIONALES ====================
-  /profesionales:
+  /operative/profesionales:
     get:
       tags:
         - Profesionales
@@ -407,12 +418,24 @@ paths:
       parameters:
         - $ref: '#/components/parameters/PageParam'
         - $ref: '#/components/parameters/LimitParam'
-        - name: especialidad
+        - name: nombres
           in: query
+          description: Buscar por nombres
           schema:
             type: string
-        - name: activo
+        - name: apellidos
           in: query
+          description: Buscar por apellidos
+          schema:
+            type: string
+        - name: especialidad
+          in: query
+          description: Filtrar por especialidad
+          schema:
+            type: string
+        - name: estado
+          in: query
+          description: Filtrar por estado
           schema:
             type: boolean
       responses:
@@ -459,7 +482,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /profesionales/{id}:
+  /operative/profesionales/{id}:
     get:
       tags:
         - Profesionales
@@ -523,7 +546,7 @@ paths:
           $ref: '#/components/responses/InternalServerError'
 
   # ==================== UNIDADES ====================
-  /unidades:
+  /operative/unid-atencion:
     get:
       tags:
         - Unidades
@@ -531,6 +554,27 @@ paths:
       parameters:
         - $ref: '#/components/parameters/PageParam'
         - $ref: '#/components/parameters/LimitParam'
+        - name: nombre
+          in: query
+          description: Buscar por nombre de la unidad
+          schema:
+            type: string
+        - name: tipo
+          in: query
+          description: Filtrar por tipo de unidad
+          schema:
+            type: string
+            enum: [Sede, Consultorio, Servicio]
+        - name: direccion
+          in: query
+          description: Buscar por dirección
+          schema:
+            type: string
+        - name: estado
+          in: query
+          description: Filtrar por estado
+          schema:
+            type: boolean
       responses:
         '200':
           description: Lista de unidades
@@ -573,7 +617,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /unidades/{id}:
+  /operative/unid-atencion/{id}:
     get:
       tags:
         - Unidades
@@ -593,42 +637,99 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags:
+        - Unidades
+      summary: Actualizar unidad
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnidadInput'
+      responses:
+        '200':
+          description: Unidad actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Unidad'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - Unidades
+      summary: Eliminar unidad (lógico)
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '204':
+          description: Unidad eliminada exitosamente
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   # ==================== AGENDA ====================
-  /agenda:
+  /operative/agendas:
     get:
       tags:
         - Agenda
       summary: Consultar disponibilidad de agenda
       description: Obtiene bloques de agenda por profesional, unidad o rango de fechas
       parameters:
-        - name: profesionalId
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: nombreProfesional
           in: query
+          description: Buscar por nombre del profesional
+          schema:
+            type: string
+        - name: nombreUnidad
+          in: query
+          description: Buscar por nombre de la unidad
+          schema:
+            type: string
+        - name: profesional
+          in: query
+          description: ID del profesional
           schema:
             type: integer
             format: int32
-        - name: unidadId
+        - name: unidad
           in: query
+          description: ID de la unidad
           schema:
             type: integer
             format: int32
-        - name: fechaInicio
+        - name: estado
           in: query
-          required: true
+          description: Estado de la agenda
+          schema:
+            type: string
+            enum: [Activa, Inactiva, Bloqueada, Cancelada]
+        - name: fechaDesde
+          in: query
+          description: Fecha inicial del rango
           schema:
             type: string
             format: date
-        - name: fechaFin
+        - name: fechaHasta
           in: query
-          required: true
+          description: Fecha final del rango
           schema:
             type: string
             format: date
-        - name: disponible
-          in: query
-          description: Filtrar solo bloques disponibles
-          schema:
-            type: boolean
       responses:
         '200':
           description: Bloques de agenda encontrados
@@ -674,11 +775,30 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /agenda/{id}:
+  /operative/agendas/{id}:
+    get:
+      tags:
+        - Agenda
+      summary: Obtener agenda por ID
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Agenda encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BloqueAgenda'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     patch:
       tags:
         - Agenda
-      summary: Actualizar estado de bloque de agenda
+      summary: Actualizar agenda
       parameters:
         - $ref: '#/components/parameters/IdParam'
       requestBody:
@@ -686,16 +806,10 @@ paths:
         content:
           application/json:
             schema:
-              type: object
-              required:
-                - estado
-              properties:
-                estado:
-                  type: string
-                  enum: [disponible, bloqueado, cancelado]
+              $ref: '#/components/schemas/BloqueAgendaInput'
       responses:
         '200':
-          description: Estado actualizado exitosamente
+          description: Agenda actualizada exitosamente
           content:
             application/json:
               schema:
@@ -708,9 +822,24 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - Agenda
+      summary: Eliminar agenda (lógico)
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '204':
+          description: Agenda eliminada exitosamente
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   # ==================== CITAS ====================
-  /citas:
+  /operative/citas:
     get:
       tags:
         - Citas
@@ -718,28 +847,55 @@ paths:
       parameters:
         - $ref: '#/components/parameters/PageParam'
         - $ref: '#/components/parameters/LimitParam'
-        - name: personaId
+        - name: nombrePersona
           in: query
+          description: Buscar por nombre del paciente
+          schema:
+            type: string
+        - name: nombreProfesional
+          in: query
+          description: Buscar por nombre del profesional
+          schema:
+            type: string
+        - name: paciente
+          in: query
+          description: ID del paciente
           schema:
             type: integer
             format: int32
-        - name: profesionalId
+        - name: profesional
           in: query
+          description: ID del profesional
+          schema:
+            type: integer
+            format: int32
+        - name: scheduleId
+          in: query
+          description: ID de la agenda
+          schema:
+            type: integer
+            format: int32
+        - name: unidadId
+          in: query
+          description: ID de la unidad de atención
           schema:
             type: integer
             format: int32
         - name: estado
           in: query
+          description: Estado de la cita
           schema:
             type: string
-            enum: [pendiente, confirmada, cancelada, completada, no_asistio]
-        - name: fechaInicio
+            enum: [Solicitada, Confirmada, Cumplida, Cancelada, No asistio]
+        - name: fechaDesde
           in: query
+          description: Fecha inicial del rango
           schema:
             type: string
             format: date
-        - name: fechaFin
+        - name: fechaHasta
           in: query
+          description: Fecha final del rango
           schema:
             type: string
             format: date
@@ -793,7 +949,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /citas/{id}:
+  /operative/citas/{id}:
     get:
       tags:
         - Citas
@@ -846,9 +1002,24 @@ paths:
                 $ref: '#/components/schemas/Error'
         '500':
           $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - Citas
+      summary: Eliminar cita (lógico)
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '204':
+          description: Cita eliminada exitosamente
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
 
   # ==================== EPISODIOS ====================
-  /episodios:
+  /clinic/episodios:
     get:
       tags:
         - Episodios
@@ -856,16 +1027,46 @@ paths:
       parameters:
         - $ref: '#/components/parameters/PageParam'
         - $ref: '#/components/parameters/LimitParam'
-        - name: personaId
+        - name: nombrePaciente
           in: query
+          description: Buscar por nombre del paciente
+          schema:
+            type: string
+        - name: documentoPaciente
+          in: query
+          description: Buscar por documento del paciente
+          schema:
+            type: string
+        - name: paciente
+          in: query
+          description: ID del paciente
           schema:
             type: integer
             format: int32
         - name: estado
           in: query
+          description: Estado del episodio
           schema:
             type: string
-            enum: [abierto, cerrado]
+            enum: [Abierto, Cerrado]
+        - name: tipo
+          in: query
+          description: Tipo de episodio
+          schema:
+            type: string
+            enum: [Consulta, Procedimiento, Control, Urgencia]
+        - name: fechaDesde
+          in: query
+          description: Fecha inicial del rango
+          schema:
+            type: string
+            format: date
+        - name: fechaHasta
+          in: query
+          description: Fecha final del rango
+          schema:
+            type: string
+            format: date
       responses:
         '200':
           description: Lista de episodios
@@ -908,7 +1109,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /episodios/{id}:
+  /clinic/episodios/{id}:
     get:
       tags:
         - Episodios
@@ -928,33 +1129,10 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
-  /episodios/{id}/notas:
-    get:
+    patch:
       tags:
         - Episodios
-      summary: Listar notas del episodio
-      parameters:
-        - $ref: '#/components/parameters/IdParam'
-      responses:
-        '200':
-          description: Lista de notas
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Nota'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-    post:
-      tags:
-        - Episodios
-      summary: Crear nota en episodio
+      summary: Actualizar episodio
       parameters:
         - $ref: '#/components/parameters/IdParam'
       requestBody:
@@ -962,14 +1140,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NotaInput'
+              $ref: '#/components/schemas/EpisodioInput'
       responses:
-        '201':
-          description: Nota creada exitosamente
+        '200':
+          description: Episodio actualizado exitosamente
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Nota'
+                $ref: '#/components/schemas/Episodio'
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -979,13 +1157,43 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /episodios/{id}/diagnosticos:
-    get:
+  /clinic/episodios/{id}/cerrar:
+    patch:
       tags:
         - Episodios
-      summary: Listar diagnósticos del episodio
+      summary: Cerrar episodio
+      description: Cambia el estado del episodio a 'Cerrado'
       parameters:
         - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Episodio cerrado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Episodio'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /clinic/episodios/{episodeId}/diagnosticos:
+    get:
+      tags:
+        - Diagnósticos
+      summary: Listar diagnósticos del episodio
+      parameters:
+        - name: episodeId
+          in: path
+          required: true
+          description: ID del episodio
+          schema:
+            type: integer
+            format: int32
       responses:
         '200':
           description: Lista de diagnósticos
@@ -1003,10 +1211,16 @@ paths:
           $ref: '#/components/responses/InternalServerError'
     post:
       tags:
-        - Episodios
+        - Diagnósticos
       summary: Agregar diagnóstico al episodio
       parameters:
-        - $ref: '#/components/parameters/IdParam'
+        - name: episodeId
+          in: path
+          required: true
+          description: ID del episodio
+          schema:
+            type: integer
+            format: int32
       requestBody:
         required: true
         content:
@@ -1029,32 +1243,530 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /episodios/{id}/consentimientos:
+  # ==================== NOTAS CLÍNICAS ====================
+  /clinic/notas-clinicas:
     get:
       tags:
-        - Episodios
-      summary: Listar consentimientos del episodio
+        - Notas Clínicas
+      summary: Listar notas clínicas
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: episodio
+          in: query
+          description: ID del episodio
+          schema:
+            type: integer
+            format: int32
+        - name: profesional
+          in: query
+          description: ID del profesional
+          schema:
+            type: integer
+            format: int32
+        - name: fechaDesde
+          in: query
+          description: Fecha inicial del rango
+          schema:
+            type: string
+            format: date
+        - name: fechaHasta
+          in: query
+          description: Fecha final del rango
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Lista de notas clínicas
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Nota'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Notas Clínicas
+      summary: Crear nota clínica
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotaInput'
+      responses:
+        '201':
+          description: Nota creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Nota'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /clinic/notas-clinicas/{id}:
+    get:
+      tags:
+        - Notas Clínicas
+      summary: Obtener nota clínica por ID
       parameters:
         - $ref: '#/components/parameters/IdParam'
       responses:
         '200':
-          description: Lista de consentimientos
+          description: Nota encontrada
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Consentimiento'
+                $ref: '#/components/schemas/Nota'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags:
+        - Notas Clínicas
+      summary: Actualizar nota clínica
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NotaInput'
+      responses:
+        '200':
+          description: Nota actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Nota'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /clinic/notas-clinicas/{id}/versiones:
+    get:
+      tags:
+        - Notas Clínicas
+      summary: Obtener historial de versiones de una nota
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Historial de versiones obtenido exitosamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Nota'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /clinic/notas-clinicas/{id}/version-actual:
+    get:
+      tags:
+        - Notas Clínicas
+      summary: Obtener la versión más reciente de una nota
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Versión actual obtenida exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Nota'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /clinic/notas-clinicas/{id}/comparar:
+    get:
+      tags:
+        - Notas Clínicas
+      summary: Comparar dos versiones de una nota
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+        - name: versionAnterior
+          in: query
+          required: true
+          description: ID de la versión anterior
+          schema:
+            type: integer
+            format: int32
+        - name: versionNueva
+          in: query
+          required: true
+          description: ID de la versión nueva
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Comparación realizada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  versionAnterior:
+                    $ref: '#/components/schemas/Nota'
+                  versionNueva:
+                    $ref: '#/components/schemas/Nota'
+                  cambios:
+                    type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /clinic/notas-clinicas/version/{versionId}:
+    get:
+      tags:
+        - Notas Clínicas
+      summary: Obtener una versión específica de una nota
+      parameters:
+        - name: versionId
+          in: path
+          required: true
+          description: ID de la versión
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Versión encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Nota'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ==================== DIAGNÓSTICOS ====================
+  /clinic/diagnosticos:
+    get:
+      tags:
+        - Diagnósticos
+      summary: Listar diagnósticos
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: codigo
+          in: query
+          description: Buscar por código CIE-10
+          schema:
+            type: string
+        - name: tipo
+          in: query
+          description: Tipo de diagnóstico
+          schema:
+            type: string
+            enum: [Presuntivo, Definitivo]
+        - name: episodio
+          in: query
+          description: ID del episodio
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Lista de diagnósticos
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Diagnostico'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     post:
       tags:
-        - Episodios
-      summary: Registrar consentimiento en episodio
+        - Diagnósticos
+      summary: Crear diagnóstico
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiagnosticoInput'
+      responses:
+        '201':
+          description: Diagnóstico creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Diagnostico'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /clinic/diagnosticos/{id}:
+    get:
+      tags:
+        - Diagnósticos
+      summary: Obtener diagnóstico por ID
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Diagnóstico encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Diagnostico'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags:
+        - Diagnósticos
+      summary: Actualizar diagnóstico
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DiagnosticoInput'
+      responses:
+        '200':
+          description: Diagnóstico actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Diagnostico'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - Diagnósticos
+      summary: Eliminar diagnóstico (lógico)
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '204':
+          description: Diagnóstico eliminado exitosamente
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /clinic/episodios/{episodeId}/diagnosticos/principal:
+    get:
+      tags:
+        - Diagnósticos
+      summary: Obtener diagnóstico principal del episodio
+      parameters:
+        - name: episodeId
+          in: path
+          required: true
+          description: ID del episodio
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Diagnóstico principal encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Diagnostico'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /clinic/episodios/{episodeId}/diagnosticos/{diagnosisId}/principal:
+    put:
+      tags:
+        - Diagnósticos
+      summary: Marcar diagnóstico como principal
+      parameters:
+        - name: episodeId
+          in: path
+          required: true
+          description: ID del episodio
+          schema:
+            type: integer
+            format: int32
+        - name: diagnosisId
+          in: path
+          required: true
+          description: ID del diagnóstico
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Diagnóstico marcado como principal exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Diagnostico'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ==================== CONSENTIMIENTOS ====================
+  /clinic/consentimientos:
+    get:
+      tags:
+        - Consentimientos
+      summary: Listar consentimientos
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: documento
+          in: query
+          description: Documento del paciente
+          schema:
+            type: string
+        - name: fechaDesde
+          in: query
+          description: Fecha inicial del rango
+          schema:
+            type: string
+            format: date
+        - name: fechaHasta
+          in: query
+          description: Fecha final del rango
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Lista de consentimientos
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Consentimiento'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Consentimientos
+      summary: Crear consentimiento
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConsentimientoInput'
+      responses:
+        '201':
+          description: Consentimiento creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Consentimiento'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /clinic/consentimientos/{id}:
+    get:
+      tags:
+        - Consentimientos
+      summary: Obtener consentimiento por ID
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Consentimiento encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Consentimiento'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags:
+        - Consentimientos
+      summary: Actualizar consentimiento
       parameters:
         - $ref: '#/components/parameters/IdParam'
       requestBody:
@@ -1064,14 +1776,29 @@ paths:
             schema:
               $ref: '#/components/schemas/ConsentimientoInput'
       responses:
-        '201':
-          description: Consentimiento registrado exitosamente
+        '200':
+          description: Consentimiento actualizado exitosamente
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Consentimiento'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - Consentimientos
+      summary: Eliminar consentimiento (lógico)
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '204':
+          description: Consentimiento eliminado exitosamente
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
