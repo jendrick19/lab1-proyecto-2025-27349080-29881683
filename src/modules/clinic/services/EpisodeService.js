@@ -5,14 +5,30 @@ const { addDateRangeToWhere } = require('../../../shared/utils/dateRangeHelper')
 const { NotFoundError, BusinessLogicError, ConflictError } = require('../../../shared/errors/CustomErrors');
 const db = require('../../../../database/models');
 
-const VALID_STATUSES = ['Abierto', 'Cerrado'];
+const VALID_STATUSES = ['abierto', 'cerrado'];
 
 const ALLOWED_TRANSITIONS = {
-  'Abierto': ['Cerrado'],
-  'Cerrado': []
+  'abierto': ['cerrado'],
+  'cerrado': []
 };
 
-const VALID_TYPES = ['Consulta', 'Procedimiento', 'Control', 'Urgencia'];
+const VALID_TYPES = ['consulta', 'procedimiento', 'control', 'urgencia'];
+
+// Normalizar estado a minúsculas (case-insensitive)
+const normalizeStatus = (status) => {
+  if (typeof status === 'string') {
+    return status.toLowerCase();
+  }
+  return status;
+};
+
+// Normalizar tipo a minúsculas (case-insensitive)
+const normalizeType = (type) => {
+  if (typeof type === 'string') {
+    return type.toLowerCase();
+  }
+  return type;
+};
 
 const SORT_FIELDS = {
   fecha: 'openingDate',
@@ -30,18 +46,20 @@ const buildWhere = ({ paciente, estado, tipo, fechaDesde, fechaHasta }) => {
   }
 
   if (estado) {
+    // Normalizar estado a minúsculas (case-insensitive)
     if (Array.isArray(estado)) {
-      where.status = { [Op.in]: estado };
+      where.status = { [Op.in]: estado.map(normalizeStatus) };
     } else {
-      where.status = estado;
+      where.status = normalizeStatus(estado);
     }
   }
 
   if (tipo) {
+    // Normalizar tipo a minúsculas (case-insensitive)
     if (Array.isArray(tipo)) {
-      where.type = { [Op.in]: tipo };
+      where.type = { [Op.in]: tipo.map(normalizeType) };
     } else {
-      where.type = tipo;
+      where.type = normalizeType(tipo);
     }
   }
 
@@ -114,48 +132,21 @@ const getEpisodeById = async (id) => {
   return episode;
 };
 
-const searchEpisodesByPatientName = async (searchTerm, { page, limit, sortBy, sortOrder }) => {
-  const { safePage, safeLimit, offset } = buildPaginationParams(page, limit);
-
-  const orderField = SORT_FIELDS[sortBy] || SORT_FIELDS.fecha;
-  const orderDirection = sortOrder === 'desc' ? 'DESC' : 'ASC';
-
-  const { count, rows } = await episodeRepository.findByPatientName(searchTerm, {
-    offset,
-    limit: safeLimit,
-    order: [[orderField, orderDirection]]
-  });
-
-  return buildPaginationResponse(rows, count, safePage, safeLimit);
-};
-
-const searchEpisodesByPatientDocument = async (documentType, documentId, { page, limit, sortBy, sortOrder }) => {
-  const { safePage, safeLimit, offset } = buildPaginationParams(page, limit);
-
-  const orderField = SORT_FIELDS[sortBy] || SORT_FIELDS.fecha;
-  const orderDirection = sortOrder === 'desc' ? 'DESC' : 'ASC';
-
-  const { count, rows } = await episodeRepository.findByPatientDocument(documentType, documentId, {
-    offset,
-    limit: safeLimit,
-    order: [[orderField, orderDirection]]
-  });
-
-  return buildPaginationResponse(rows, count, safePage, safeLimit);
-};
-
 const validateStatusTransition = (oldStatus, newStatus) => {
-  if (!VALID_STATUSES.includes(newStatus)) {
+  const normalizedOldStatus = normalizeStatus(oldStatus);
+  const normalizedNewStatus = normalizeStatus(newStatus);
+
+  if (!VALID_STATUSES.includes(normalizedNewStatus)) {
     throw new BusinessLogicError(`Estado "${newStatus}" no es válido. Estados válidos: ${VALID_STATUSES.join(', ')}`);
   }
 
-  if (oldStatus === newStatus) {
+  if (normalizedOldStatus === normalizedNewStatus) {
     return true;
   }
 
-  const allowedNextStatuses = ALLOWED_TRANSITIONS[oldStatus] || [];
+  const allowedNextStatuses = ALLOWED_TRANSITIONS[normalizedOldStatus] || [];
   
-  if (!allowedNextStatuses.includes(newStatus)) {
+  if (!allowedNextStatuses.includes(normalizedNewStatus)) {
     throw new BusinessLogicError(
       `No se puede cambiar de "${oldStatus}" a "${newStatus}". ` +
       `Estados permitidos: ${allowedNextStatuses.join(', ') || 'ninguno (estado final)'}`
@@ -190,12 +181,23 @@ const createEpisode = async (episodeData) => {
   }
   validateEpisodeType(episodeData.type);
 
+  // Normalizar tipo y estado
+  if (episodeData.type) {
+    episodeData.type = normalizeType(episodeData.type);
+  }
+  
   if (!episodeData.status) {
-    episodeData.status = 'Abierto';
+    episodeData.status = 'abierto';
+  } else {
+    episodeData.status = normalizeStatus(episodeData.status);
   }
 
   if (!VALID_STATUSES.includes(episodeData.status)) {
     throw new BusinessLogicError(`Estado "${episodeData.status}" no es válido. Estados válidos: ${VALID_STATUSES.join(', ')}`);
+  }
+  
+  if (!VALID_TYPES.includes(episodeData.type)) {
+    throw new BusinessLogicError(`Tipo "${episodeData.type}" no es válido. Tipos válidos: ${VALID_TYPES.join(', ')}`);
   }
 
   if (!episodeData.openingDate) {
@@ -208,12 +210,19 @@ const createEpisode = async (episodeData) => {
 const updateEpisode = async (id, payload) => {
   const episode = await getEpisodeById(id);
 
-  if (payload.status !== undefined && payload.status !== episode.status) {
-    validateStatusTransition(episode.status, payload.status);
+  // Normalizar estado y tipo si se proporcionan
+  if (payload.status !== undefined) {
+    payload.status = normalizeStatus(payload.status);
+    if (payload.status !== episode.status) {
+      validateStatusTransition(episode.status, payload.status);
+    }
   }
 
-  if (payload.type !== undefined && payload.type !== episode.type) {
-    validateEpisodeType(payload.type);
+  if (payload.type !== undefined) {
+    payload.type = normalizeType(payload.type);
+    if (payload.type !== episode.type) {
+      validateEpisodeType(payload.type);
+    }
   }
 
   if (payload.peopleId !== undefined && payload.peopleId !== episode.peopleId) {
@@ -230,12 +239,13 @@ const updateEpisode = async (id, payload) => {
 const closeEpisode = async (id) => {
   const episode = await getEpisodeById(id);
 
-  if (episode.status === 'Cerrado') {
+  const normalizedStatus = normalizeStatus(episode.status);
+  if (normalizedStatus === 'cerrado') {
     throw new BusinessLogicError('El episodio ya está cerrado');
   }
 
-  validateStatusTransition(episode.status, 'Cerrado');
-  episode.status = 'Cerrado';
+  validateStatusTransition(episode.status, 'cerrado');
+  episode.status = 'cerrado';
   
   return episodeRepository.save(episode);
 };
@@ -243,12 +253,12 @@ const closeEpisode = async (id) => {
 module.exports = {
   listEpisodes,
   getEpisodeById,
-  searchEpisodesByPatientName,
-  searchEpisodesByPatientDocument,
   createEpisode,
   updateEpisode,
   closeEpisode,
   validateStatusTransition,
-  validateEpisodeType
+  validateEpisodeType,
+  normalizeStatus,
+  normalizeType
 };
 

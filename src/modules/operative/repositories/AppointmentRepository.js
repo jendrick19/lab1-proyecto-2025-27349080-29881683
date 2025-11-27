@@ -36,7 +36,7 @@ const findOverlapping = async (scheduleId, startTime, endTime, excludeAppointmen
   const where = {
     scheduleId,
     status: {
-      [Op.in]: ['Solicitada', 'Confirmada']
+      [Op.in]: ['solicitada', 'confirmada']
     },
     [Op.or]: [
       {

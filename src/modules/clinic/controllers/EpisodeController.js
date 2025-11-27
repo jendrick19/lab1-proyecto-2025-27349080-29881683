@@ -1,8 +1,6 @@
 const {
   listEpisodes,
   getEpisodeById,
-  searchEpisodesByPatientName,
-  searchEpisodesByPatientDocument,
   createEpisode,
   updateEpisode,
   closeEpisode,
@@ -123,44 +121,6 @@ const getHandler = async (req, res, next) => {
   }
 };
 
-const searchByPersonHandler = async (req, res, next) => {
-  try {
-    const { nombre, tipoDocumento, numeroDocumento, page = 1, limit = 20, sortBy = 'fecha', sortOrder = 'desc' } = req.query;
-
-    let result;
-
-    if (nombre) {
-      result = await searchEpisodesByPatientName(nombre, {
-        page,
-        limit,
-        sortBy,
-        sortOrder,
-      });
-    } else if (tipoDocumento && numeroDocumento) {
-      result = await searchEpisodesByPatientDocument(tipoDocumento, numeroDocumento, {
-        page,
-        limit,
-        sortBy,
-        sortOrder,
-      });
-    } else {
-      return res.status(400).json({
-        codigo: 400,
-        mensaje: 'Debe proporcionar "nombre" o "tipoDocumento" y "numeroDocumento" para buscar',
-      });
-    }
-
-    return res.json({
-      codigo: 200,
-      mensaje: 'Episodios encontrados',
-      data: result.rows.map(mapModelToResponse),
-      pagination: result.pagination,
-    });
-  } catch (error) {
-    return next(error);
-  }
-};
-
 const createHandler = async (req, res, next) => {
   try {
     const payload = mapRequestToModel(req.body);
@@ -210,7 +170,6 @@ const closeHandler = async (req, res, next) => {
 module.exports = {
   listHandler,
   getHandler,
-  searchByPersonHandler,
   createHandler,
   updateHandler,
   closeHandler,

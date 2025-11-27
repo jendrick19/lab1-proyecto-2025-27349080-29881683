@@ -35,7 +35,7 @@ const validateEpisodeExists = async (episodeId) => {
     throw new NotFoundError('Episodio no encontrado');
   }
 
-  if (episode.status === 'Cerrado') {
+  if (episode.status === 'cerrado') {
     throw new BusinessLogicError('No se pueden crear o modificar diagnósticos en un episodio cerrado');
   }
 

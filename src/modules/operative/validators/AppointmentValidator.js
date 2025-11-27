@@ -9,7 +9,7 @@ const db = require('../../../../database/models');
 
 const { PeopleAttended, Professional, CareUnit, Schedule } = db.modules.operative;
 
-const VALID_STATUSES = ['Solicitada', 'Confirmada', 'Cumplida', 'Cancelada', 'No asistio'];
+const VALID_STATUSES = ['solicitada', 'confirmada', 'cumplida', 'cancelada', 'no asistio'];
 const VALID_CHANNELS = ['Presencial', 'Virtual'];
 
 
@@ -97,7 +97,7 @@ const validateCreate = [
     .isInt({ min: 1 }).withMessage('El ID de la unidad debe ser un número entero positivo')
     .custom(checkCareUnitExists),
 
-  body('scheduleId')
+  body('agendaId')
     .optional()
     .isInt({ min: 1 }).withMessage('El ID de la agenda debe ser un número entero positivo')
     .custom(checkScheduleExists),
@@ -119,6 +119,7 @@ const validateCreate = [
 
   body('estado')
     .optional()
+    .customSanitizer((value) => value ? value.toLowerCase() : value)
     .isIn(VALID_STATUSES).withMessage(`El estado debe ser uno de los siguientes: ${VALID_STATUSES.join(', ')}`),
 
   body('motivo')
@@ -152,7 +153,7 @@ const validateUpdate = [
     .isInt({ min: 1 }).withMessage('El ID de la unidad debe ser un número entero positivo')
     .custom(checkCareUnitExists),
 
-  body('scheduleId')
+  body('agendaId')
     .optional()
     .isInt({ min: 1 }).withMessage('El ID de la agenda debe ser un número entero positivo')
     .custom(checkScheduleExists),
@@ -174,6 +175,7 @@ const validateUpdate = [
 
   body('estado')
     .optional()
+    .customSanitizer((value) => value ? value.toLowerCase() : value)
     .isIn(VALID_STATUSES).withMessage(`El estado debe ser uno de los siguientes: ${VALID_STATUSES.join(', ')}`),
 
   body('motivo')
@@ -221,7 +223,7 @@ const validateList = [
     .optional()
     .isInt({ min: 1 }).withMessage('El ID del profesional debe ser un número entero positivo'),
 
-  query('scheduleId')
+  query('agendaId')
     .optional()
     .isInt({ min: 1 }).withMessage('El ID de la agenda debe ser un número entero positivo'),
 
@@ -231,6 +233,12 @@ const validateList = [
 
   query('estado')
     .optional()
+    .customSanitizer((value) => {
+      if (Array.isArray(value)) {
+        return value.map(v => v ? v.toLowerCase() : v);
+      }
+      return value ? value.toLowerCase() : value;
+    })
     .custom((value) => {
       const estados = Array.isArray(value) ? value : [value];
       const invalidEstados = estados.filter(estado => !VALID_STATUSES.includes(estado));

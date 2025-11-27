@@ -5,14 +5,14 @@ const { addDateRangeToWhere } = require('../../../shared/utils/dateRangeHelper')
 const { NotFoundError, BusinessLogicError, ConflictError } = require('../../../shared/errors/CustomErrors');
 const db = require('../../../../database/models');
 
-const VALID_STATUSES = ['Solicitada', 'Confirmada', 'Cumplida', 'Cancelada', 'No asistio'];
+const VALID_STATUSES = ['solicitada', 'confirmada', 'cumplida', 'cancelada', 'no asistio'];
 
 const ALLOWED_TRANSITIONS = {
-  'Solicitada': ['Confirmada', 'Cancelada'],
-  'Confirmada': ['Cumplida', 'Cancelada', 'No asistio'],
-  'Cumplida': [],
-  'Cancelada': [],
-  'No asistio': []
+  'solicitada': ['confirmada', 'cancelada'],
+  'confirmada': ['cumplida', 'cancelada', 'no asistio'],
+  'cumplida': [],
+  'cancelada': [],
+  'no asistio': []
 };
 
 const SORT_FIELDS = {
@@ -23,7 +23,7 @@ const SORT_FIELDS = {
   createdAt: 'createdAt',
 };
 
-const buildWhere = ({ paciente, profesional, estado, fechaDesde, fechaHasta, scheduleId, unitId }) => {
+const buildWhere = ({ paciente, profesional, estado, fechaDesde, fechaHasta, agendaId, unidadId }) => {
   const where = {};
 
   if (paciente) {
@@ -34,19 +34,27 @@ const buildWhere = ({ paciente, profesional, estado, fechaDesde, fechaHasta, sch
     where.professionalId = Number(profesional);
   }
 
-  if (scheduleId) {
-    where.scheduleId = Number(scheduleId);
+  if (agendaId) {
+    where.scheduleId = Number(agendaId);
   }
 
-  if (unitId) {
-    where.unitId = Number(unitId);
+  if (unidadId) {
+    where.unitId = Number(unidadId);
   }
 
   if (estado) {
+    // Normalizar estado a minúsculas (case-insensitive)
+    const normalizeStatus = (status) => {
+      if (typeof status === 'string') {
+        return status.toLowerCase();
+      }
+      return status;
+    };
+
     if (Array.isArray(estado)) {
-      where.status = { [Op.in]: estado };
+      where.status = { [Op.in]: estado.map(normalizeStatus) };
     } else {
-      where.status = estado;
+      where.status = normalizeStatus(estado);
     }
   }
 
@@ -137,18 +145,28 @@ const checkScheduleOverlap = async (scheduleId, startTime, endTime, excludeAppoi
   return overlappingAppointment !== null;
 };
 
+const normalizeStatus = (status) => {
+  if (typeof status === 'string') {
+    return status.toLowerCase();
+  }
+  return status;
+};
+
 const validateStatusTransition = (oldStatus, newStatus) => {
-  if (!VALID_STATUSES.includes(newStatus)) {
+  const normalizedNewStatus = normalizeStatus(newStatus);
+  const normalizedOldStatus = normalizeStatus(oldStatus);
+
+  if (!VALID_STATUSES.includes(normalizedNewStatus)) {
     throw new BusinessLogicError(`Estado "${newStatus}" no es válido. Estados válidos: ${VALID_STATUSES.join(', ')}`);
   }
 
-  if (oldStatus === newStatus) {
+  if (normalizedOldStatus === normalizedNewStatus) {
     return true;
   }
 
-  const allowedNextStatuses = ALLOWED_TRANSITIONS[oldStatus] || [];
+  const allowedNextStatuses = ALLOWED_TRANSITIONS[normalizedOldStatus] || [];
   
-  if (!allowedNextStatuses.includes(newStatus)) {
+  if (!allowedNextStatuses.includes(normalizedNewStatus)) {
     throw new BusinessLogicError(
       `No se puede cambiar de "${oldStatus}" a "${newStatus}". ` +
       `Estados permitidos: ${allowedNextStatuses.join(', ') || 'ninguno (estado final)'}`
@@ -197,8 +215,11 @@ const recordHistory = async (appointment, changes, changeReason) => {
 };
 
 const createAppointment = async (appointmentData) => {
-  if (!appointmentData.status) {
-    appointmentData.status = 'Solicitada';
+  // Normalizar estado a minúsculas
+  if (appointmentData.status) {
+    appointmentData.status = normalizeStatus(appointmentData.status);
+  } else {
+    appointmentData.status = 'solicitada';
   }
 
   if (appointmentData.scheduleId && appointmentData.startTime && appointmentData.endTime) {
@@ -221,8 +242,12 @@ const updateAppointment = async (appointment, payload, changeReason = null) => {
   const oldStartTime = appointment.startTime;
   const oldEndTime = appointment.endTime;
 
-  if (payload.status !== undefined && payload.status !== appointment.status) {
-    validateStatusTransition(appointment.status, payload.status);
+  // Normalizar estado si se proporciona
+  if (payload.status !== undefined) {
+    payload.status = normalizeStatus(payload.status);
+    if (payload.status !== appointment.status) {
+      validateStatusTransition(appointment.status, payload.status);
+    }
   }
 
   const scheduleId = payload.scheduleId !== undefined ? payload.scheduleId : appointment.scheduleId;
@@ -273,13 +298,14 @@ const updateAppointment = async (appointment, payload, changeReason = null) => {
 const softDeleteAppointment = async (id) => {
   const appointment = await getAppointmentById(id);
   
-  if (appointment.status === 'Confirmada' || appointment.status === 'Solicitada') {
-    appointment.status = 'Cancelada';
+  const normalizedStatus = normalizeStatus(appointment.status);
+  if (normalizedStatus === 'confirmada' || normalizedStatus === 'solicitada') {
+    appointment.status = 'cancelada';
     await appointmentRepository.save(appointment);
     
     await recordHistory(
       appointment,
-      { status: 'Cancelada' },
+      { status: 'cancelada' },
       'Cita eliminada automáticamente'
     );
   }
@@ -287,14 +313,15 @@ const softDeleteAppointment = async (id) => {
   return appointment;
 };
 
-module.exports = {
-  listAppointments,
-  getAppointmentById,
-  createAppointment,
-  updateAppointment,
-  softDeleteAppointment,
-  checkScheduleOverlap,
-  validateStatusTransition,
-  recordHistory
-};
+  module.exports = {
+    listAppointments,
+    getAppointmentById,
+    createAppointment,
+    updateAppointment,
+    softDeleteAppointment,
+    checkScheduleOverlap,
+    validateStatusTransition,
+    recordHistory,
+    normalizeStatus
+  };
 

@@ -9,7 +9,7 @@ const {
   validateStatusQuery,
 } = require('../../../shared/validators/CommonValidator');
 
-const ALLOWED_TYPES = ['Sede', 'Consultorio', 'Servicio'];
+const ALLOWED_TYPES = ['sede', 'consultorio', 'servicio'];
 
 const checkNameUniqueness = async (value, { req }) => {
   const { Op } = require('sequelize');

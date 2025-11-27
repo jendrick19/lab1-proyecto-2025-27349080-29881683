@@ -17,7 +17,7 @@ const { episodeDiagnosisRouter } = require('./DiagnosisRouter');
 const router = Router();
 
 // Rutas CRUD estándar - usar query params para filtrar:
-// ?nombrePaciente=Juan, ?documentoPaciente=V12345678, ?paciente=1, ?estado=Abierto, ?tipo=Consulta
+// ?nombrePaciente=Juan, ?documentoPaciente=V12345678, ?paciente=1, ?estado=abierto, ?tipo=consulta
 // ?fechaDesde=2024-01-01, ?fechaHasta=2024-12-31
 router.get('/', validateList, listHandler);
 router.post('/', validateCreate, createHandler);

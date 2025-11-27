@@ -34,78 +34,6 @@ const findAndCountAll = async ({ where, offset, limit, order, include }) => {
 };
 
 
-const findByPatientName = async (searchTerm, { offset, limit, order } = {}) => {
-  const whereCondition = {
-    [Op.or]: [
-      { names: { [Op.like]: `%${searchTerm}%` } },
-      { surNames: { [Op.like]: `%${searchTerm}%` } },
-      { 
-        [Op.and]: [
-          { names: { [Op.like]: `%${searchTerm.split(' ')[0]}%` } },
-          { surNames: { [Op.like]: `%${searchTerm.split(' ')[1] || ''}%` } }
-        ]
-      }
-    ]
-  };
-
-  return Episode.findAndCountAll({
-    include: [
-      {
-        model: PeopleAttended,
-        as: 'peopleAttended',
-        where: whereCondition,
-        required: true
-      },
-      { model: db.modules.clinic.ClinicalNote, as: 'clinicalNotes' },
-      { model: db.modules.clinic.Diagnosis, as: 'diagnosis' }
-    ],
-    offset,
-    limit,
-    order: order || [['openingDate', 'DESC']],
-    distinct: true,
-  });
-};
-
-
-const findByPatientDocument = async (documentType, documentId, { offset, limit, order } = {}) => {
-  return Episode.findAndCountAll({
-    include: [
-      {
-        model: PeopleAttended,
-        as: 'peopleAttended',
-        where: {
-          documentType,
-          documentId
-        },
-        required: true
-      },
-      { model: db.modules.clinic.ClinicalNote, as: 'clinicalNotes' },
-      { model: db.modules.clinic.Diagnosis, as: 'diagnosis' }
-    ],
-    offset,
-    limit,
-    order: order || [['openingDate', 'DESC']],
-    distinct: true,
-  });
-};
-
-
-const findByStatus = async (status, { offset, limit, order } = {}) => {
-  return Episode.findAndCountAll({
-    where: { status },
-    include: [
-      { model: db.modules.operative.PeopleAttended, as: 'peopleAttended' },
-      { model: db.modules.clinic.ClinicalNote, as: 'clinicalNotes' },
-      { model: db.modules.clinic.Diagnosis, as: 'diagnosis' }
-    ],
-    offset,
-    limit,
-    order: order || [['openingDate', 'DESC']],
-    distinct: true,
-  });
-};
-
-
 const create = async (payload) => {
   return Episode.create(payload);
 };
@@ -124,9 +52,6 @@ const save = async (episode) => {
 module.exports = {
   findById,
   findAndCountAll,
-  findByPatientName,
-  findByPatientDocument,
-  findByStatus,
   create,
   update,
   save,

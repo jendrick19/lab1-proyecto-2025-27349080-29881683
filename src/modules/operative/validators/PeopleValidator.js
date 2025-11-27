@@ -45,7 +45,8 @@ const validateCreate = [
 
   body('tipoDocumento')
     .notEmpty().withMessage('El tipo de documento es requerido')
-    .isIn(['Cedula', 'RIF', 'Pasaporte', 'Otro']).withMessage('Tipo de documento inválido'),
+    .customSanitizer((value) => value ? value.toLowerCase() : value)
+    .isIn(['cedula', 'rif', 'pasaporte', 'otro']).withMessage('Tipo de documento inválido'),
 
   body('numeroDocumento')
     .notEmpty().withMessage('El número de documento es requerido')
@@ -99,7 +100,8 @@ const validateUpdate = [
 
   body('tipoDocumento')
     .optional()
-    .isIn(['Cedula', 'RIF', 'Pasaporte', 'Otro']).withMessage('Tipo de documento inválido'),
+    .customSanitizer((value) => value ? value.toLowerCase() : value)
+    .isIn(['cedula', 'rif', 'pasaporte', 'otro']).withMessage('Tipo de documento inválido'),
 
   body('numeroDocumento')
     .optional()
@@ -158,9 +160,14 @@ const validateList = [
   ...validatePagination(),
   ...validateSorting(['nombres', 'apellidos', 'fechaNacimiento', 'createdAt']),
 
-  query('documento')
+  query('tipoDocumento')
     .optional()
-    .isLength({ min: 1, max: 20 }).withMessage('El documento debe tener entre 1 y 20 caracteres'),
+    .customSanitizer((value) => value ? value.toLowerCase() : value)
+    .isIn(['cedula', 'rif', 'pasaporte', 'otro']).withMessage('Tipo de documento inválido'),
+
+  query('numeroDocumento')
+    .optional()
+    .isLength({ min: 1, max: 20 }).withMessage('El número de documento debe tener entre 1 y 20 caracteres'),
 
   query('edad')
     .optional()
@@ -170,9 +177,13 @@ const validateList = [
     .optional()
     .isIn(['M', 'F', 'O']).withMessage('El sexo debe ser M, F u O'),
 
-  query('nombre')
+  query('nombres')
     .optional()
-    .isLength({ min: 1, max: 100 }).withMessage('El nombre debe tener entre 1 y 100 caracteres'),
+    .isLength({ min: 1, max: 100 }).withMessage('Los nombres deben tener entre 1 y 100 caracteres'),
+
+  query('apellidos')
+    .optional()
+    .isLength({ min: 1, max: 100 }).withMessage('Los apellidos deben tener entre 1 y 100 caracteres'),
 
   validateStatusQuery(),
   handleValidationErrors,

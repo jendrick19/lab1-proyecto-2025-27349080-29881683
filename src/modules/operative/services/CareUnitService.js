@@ -5,14 +5,14 @@ const { NotFoundError, BusinessLogicError } = require('../../../shared/errors/Cu
 const db = require('../../../../database/models');
 
 const ALLOWED_TYPES = [
-    'Sede',
-    'Consultorio',
-    'Servicio'
+    'sede',
+    'consultorio',
+    'servicio'
 ];
 
 const ALLOWED_STATUSES = [
-    'Activo',
-    'Inactivo'
+    'activo',
+    'inactivo'
 ];
 
 const SORT_FIELDS = {

@@ -4,10 +4,6 @@ const {
     createSchedule,
     updateSchedule,
     deleteSchedule,
-    getSchedulesByProfessional,
-    getSchedulesByCareUnit,
-    searchSchedulesByProfessionalName,
-    searchSchedulesByCareUnitName,
 } = require('../services/ScheduleService');
 
 const mapModelToResponse = (schedule) => {
@@ -63,11 +59,27 @@ const listHandler = async (req, res, next) => {
         const {
             page = 1,
             limit = 20,
+            nombreProfesional,
+            nombreUnidad,
+            profesional,
+            unidad,
+            estado,
+            fechaDesde,
+            fechaHasta,
         } = req.query;
 
         const result = await listSchedules({
             page,
             limit,
+            filters: {
+                nombreProfesional,
+                nombreUnidad,
+                profesional,
+                unidad,
+                estado,
+                fechaDesde,
+                fechaHasta,
+            },
         });
 
         res.json({
@@ -143,87 +155,11 @@ const deleteHandler = async (req, res, next) => {
     }
 };
 
-const getByProfessionalHandler = async (req, res, next) => {
-    try {
-        const { professionalId } = req.params;
-        const schedules = await getSchedulesByProfessional(professionalId);
-
-        return res.json({
-            codigo: 200,
-            mensaje: 'Agendas del profesional obtenidas exitosamente',
-            data: schedules.map(mapModelToResponse),
-        });
-    } catch (error) {
-        return next(error);
-    }
-};
-
-const getByCareUnitHandler = async (req, res, next) => {
-    try {
-        const { unitId } = req.params;
-        const schedules = await getSchedulesByCareUnit(unitId);
-
-        return res.json({
-            codigo: 200,
-            mensaje: 'Agendas de la unidad obtenidas exitosamente',
-            data: schedules.map(mapModelToResponse),
-        });
-    } catch (error) {
-        return next(error);
-    }
-};
-
-const searchByProfessionalNameHandler = async (req, res, next) => {
-    try {
-        const { nombre, id } = req.query;
-        let schedules;
-
-        if (id) {
-            schedules = await getSchedulesByProfessional(id);
-        } else {
-            schedules = await searchSchedulesByProfessionalName(nombre);
-        }
-
-        return res.json({
-            codigo: 200,
-            mensaje: id ? 'Agendas del profesional obtenidas exitosamente' : 'Agendas encontradas por nombre de profesional',
-            data: schedules.map(mapModelToResponse),
-        });
-    } catch (error) {
-        return next(error);
-    }
-};
-
-const searchByCareUnitNameHandler = async (req, res, next) => {
-    try {
-        const { nombre, id } = req.query;
-        let schedules;
-
-        if (id) {
-            schedules = await getSchedulesByCareUnit(id);
-        } else {
-            schedules = await searchSchedulesByCareUnitName(nombre);
-        }
-
-        return res.json({
-            codigo: 200,
-            mensaje: id ? 'Agendas de la unidad obtenidas exitosamente' : 'Agendas encontradas por nombre de la unidad',
-            data: schedules.map(mapModelToResponse),
-        });
-    } catch (error) {
-        return next(error);
-    }
-};
-
 module.exports = {
     listHandler,
     getHandler,
     createHandler,
     updateHandler,
     deleteHandler,
-    getByProfessionalHandler,
-    getByCareUnitHandler,
-    searchByProfessionalNameHandler,
-    searchByCareUnitNameHandler,
 };
 

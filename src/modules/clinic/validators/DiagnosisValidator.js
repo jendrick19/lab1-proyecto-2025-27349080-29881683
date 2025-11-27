@@ -24,7 +24,7 @@ const checkEpisodeExists = async (value) => {
     throw new Error('El episodio especificado no existe');
   }
 
-  if (episode.status === 'Cerrado') {
+  if (episode.status === 'cerrado') {
     throw new Error('No se pueden crear o modificar diagnósticos en un episodio cerrado');
   }
 
