@@ -40,7 +40,7 @@ module.exports = {
     ];
 
     // Métodos de consentimiento (según el ENUM)
-    const methods = ['Firma digital', 'Aceptación verbal con registro'];
+    const methods = ['firma digital', 'aceptación verbal con registro'];
 
     const consents = [];
 
@@ -94,8 +94,8 @@ module.exports = {
     console.log(`   - ${people.length} personas con consentimientos`);
     
     // Estadísticas
-    const firmaDigital = consents.filter(c => c.method === 'Firma digital').length;
-    const aceptacionVerbal = consents.filter(c => c.method === 'Aceptación verbal con registro').length;
+    const firmaDigital = consents.filter(c => c.method === 'firma digital').length;
+    const aceptacionVerbal = consents.filter(c => c.method === 'aceptación verbal con registro').length;
     const conArchivo = consents.filter(c => c.fileId !== null).length;
     
     console.log(`   - ${firmaDigital} con firma digital`);

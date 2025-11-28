@@ -28,7 +28,7 @@ module.exports = {
       type: {
         type: Sequelize.ENUM('presuntivo', 'definitivo'), 
         allowNull: false,
-        defaultValue: 'Presuntivo'
+        defaultValue: 'presuntivo'
       },
       isPrimary: {
         type: Sequelize.BOOLEAN,

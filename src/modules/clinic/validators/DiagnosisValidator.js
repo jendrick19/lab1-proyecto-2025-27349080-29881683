@@ -12,6 +12,16 @@ const { Episode } = db.modules.clinic;
 
 const VALID_TYPES = ['presuntivo', 'definitivo'];
 
+/**
+ * Normaliza el tipo de diagnóstico a minúsculas para evitar problemas de case sensitivity
+ */
+const normalizeType = (value) => {
+  if (!value || typeof value !== 'string') {
+    return value;
+  }
+  return value.toLowerCase().trim();
+};
+
 const checkCIE10Code = (value) => {
   validateAndNormalizeCIE10Code(value);
   return true;
@@ -51,6 +61,7 @@ const validateCreate = [
 
   body('tipo')
     .notEmpty().withMessage('El tipo de diagnóstico es requerido')
+    .customSanitizer(normalizeType)
     .isIn(VALID_TYPES).withMessage(`El tipo debe ser uno de los siguientes: ${VALID_TYPES.join(', ')}`),
 
   body('principal')
@@ -80,6 +91,7 @@ const validateUpdate = [
 
   body('tipo')
     .optional()
+    .customSanitizer(normalizeType)
     .isIn(VALID_TYPES).withMessage(`El tipo debe ser uno de los siguientes: ${VALID_TYPES.join(', ')}`),
 
   body('principal')
@@ -120,6 +132,7 @@ const validateList = [
 
   query('tipo')
     .optional()
+    .customSanitizer(normalizeType)
     .isIn(VALID_TYPES).withMessage(`El tipo debe ser uno de los siguientes: ${VALID_TYPES.join(', ')}`),
 
   query('principal')
@@ -144,6 +157,7 @@ const validateSearchByCode = [
 const validateType = [
   param('type')
     .notEmpty().withMessage('El tipo de diagnóstico es requerido')
+    .customSanitizer(normalizeType)
     .isIn(VALID_TYPES).withMessage(`El tipo debe ser uno de los siguientes: ${VALID_TYPES.join(', ')}`),
 
   ...validatePagination(),

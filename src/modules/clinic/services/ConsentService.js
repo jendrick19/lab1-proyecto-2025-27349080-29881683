@@ -5,7 +5,7 @@ const { addDateRangeToWhere } = require('../../../shared/utils/dateRangeHelper')
 const { NotFoundError, BusinessLogicError } = require('../../../shared/errors/CustomErrors');
 const db = require('../../../../database/models');
 
-const VALID_METHODS = ['Firma digital', 'Aceptación verbal con registro'];
+const VALID_METHODS = ['firma digital', 'aceptación verbal con registro'];
 
 const SORT_FIELDS = {
   fecha: 'consentDate',
@@ -15,18 +15,27 @@ const SORT_FIELDS = {
   createdAt: 'createdAt',
 };
 
+const normalizeMethod = (method) => {
+  if (!method || typeof method !== 'string') {
+    return null;
+  }
+  return method.toLowerCase().trim();
+};
+
 const validateConsentMethod = (method) => {
   if (!method) {
     throw new BusinessLogicError('El método de consentimiento es requerido');
   }
 
-  if (!VALID_METHODS.includes(method)) {
+  const normalizedMethod = normalizeMethod(method);
+
+  if (!VALID_METHODS.includes(normalizedMethod)) {
     throw new BusinessLogicError(
       `Método de consentimiento "${method}" no es válido. Métodos válidos: ${VALID_METHODS.join(', ')}`
     );
   }
 
-  return true;
+  return normalizedMethod;
 };
 
 const validatePeopleExists = async (peopleId) => {
@@ -53,7 +62,7 @@ const buildWhere = ({ persona, documento, procedimiento, metodo, fechaDesde, fec
   }
 
   if (metodo) {
-    where.method = metodo;
+    where.method = normalizeMethod(metodo);
   }
 
   addDateRangeToWhere(where, 'consentDate', fechaDesde, fechaHasta);
@@ -154,7 +163,10 @@ const createConsent = async (consentData) => {
 
   await validatePeopleExists(consentData.peopleId);
 
-  validateConsentMethod(consentData.method);
+  // Normalizar el método a minúsculas
+  if (consentData.method) {
+    consentData.method = validateConsentMethod(consentData.method);
+  }
 
   if (!consentData.consentDate) {
     consentData.consentDate = new Date();
@@ -171,7 +183,8 @@ const updateConsent = async (id, payload) => {
   }
 
   if (payload.method !== undefined && payload.method !== consent.method) {
-    validateConsentMethod(payload.method);
+    // Normalizar el método a minúsculas
+    payload.method = validateConsentMethod(payload.method);
   }
 
   return consentRepository.update(consent, payload);
@@ -191,7 +204,5 @@ module.exports = {
   createConsent,
   updateConsent,
   deleteConsent,
-  validateConsentMethod,
-  validatePeopleExists,
 };
 
