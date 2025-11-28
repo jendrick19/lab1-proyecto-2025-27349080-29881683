@@ -9,7 +9,17 @@ const db = require('../../../../database/models');
 
 const { PeopleAttended } = db.modules.operative;
 
-const VALID_METHODS = ['Firma digital', 'Aceptación verbal con registro'];
+const VALID_METHODS = ['firma digital', 'aceptación verbal con registro'];
+
+/**
+ * Normaliza el método de consentimiento a minúsculas para evitar problemas de case sensitivity
+ */
+const normalizeMethod = (value) => {
+  if (!value || typeof value !== 'string') {
+    return value;
+  }
+  return value.toLowerCase().trim();
+};
 
 const checkPeopleExists = async (value) => {
   const people = await PeopleAttended.findByPk(value);
@@ -34,6 +44,7 @@ const validateCreate = [
 
   body('metodo')
     .notEmpty().withMessage('El método de consentimiento es requerido')
+    .customSanitizer(normalizeMethod)
     .isIn(VALID_METHODS).withMessage(`El método debe ser uno de los siguientes: ${VALID_METHODS.join(', ')}`),
 
   body('fechaConsentimiento')
@@ -61,6 +72,7 @@ const validateUpdate = [
 
   body('metodo')
     .optional()
+    .customSanitizer(normalizeMethod)
     .isIn(VALID_METHODS).withMessage(`El método debe ser uno de los siguientes: ${VALID_METHODS.join(', ')}`),
 
   body('fechaConsentimiento')
@@ -88,6 +100,11 @@ const validateList = [
     .optional()
     .isInt({ min: 1 }).withMessage('El ID de la persona debe ser un número entero positivo'),
 
+  query('documento')
+    .optional()
+    .trim()
+    .isLength({ min: 5, max: 20 }).withMessage('El documento debe tener entre 5 y 20 caracteres'),
+
   query('procedimiento')
     .optional()
     .trim()
@@ -95,6 +112,7 @@ const validateList = [
 
   query('metodo')
     .optional()
+    .customSanitizer(normalizeMethod)
     .isIn(VALID_METHODS).withMessage(`El método debe ser uno de los siguientes: ${VALID_METHODS.join(', ')}`),
 
   query('fechaDesde')
@@ -119,33 +137,10 @@ const validateList = [
   handleValidationErrors,
 ];
 
-const validateByPeopleDocument = [
-  ...validatePagination(),
-  ...validateSorting(['fecha', 'procedimiento', 'metodo', 'createdAt']),
-
-  query('documento')
-    .notEmpty().withMessage('El documento de la persona es requerido')
-    .trim()
-    .isLength({ min: 5, max: 20 }).withMessage('El documento debe tener entre 5 y 20 caracteres'),
-
-  handleValidationErrors,
-];
-
-const validateCountByPeopleDocument = [
-  query('documento')
-    .notEmpty().withMessage('El documento de la persona es requerido')
-    .trim()
-    .isLength({ min: 5, max: 20 }).withMessage('El documento debe tener entre 5 y 20 caracteres'),
-
-  handleValidationErrors,
-];
-
 module.exports = {
   validateCreate,
   validateUpdate,
   validateId,
   validateList,
-  validateByPeopleDocument,
-  validateCountByPeopleDocument,
 };
 

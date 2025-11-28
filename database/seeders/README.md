@@ -99,7 +99,7 @@ El seeder `20251123000000-demo-diagnosis.js` es un seeder especializado que:
 ### Características:
 - ✅ **40+ códigos CIE-10** organizados por categoría
 - ✅ **Diagnósticos principales y secundarios** (solo 1 principal por episodio)
-- ✅ **Tipos**: Presuntivo o Definitivo
+- ✅ **Tipos**: presuntivo o definitivo
 - ✅ **1-3 diagnósticos por episodio** (aleatorio)
 - ✅ **Sin duplicados** por episodio
 

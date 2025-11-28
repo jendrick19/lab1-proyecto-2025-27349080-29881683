@@ -124,39 +124,36 @@ const validateId = [
 
 const validateList = [
     ...validatePagination(),
-    handleValidationErrors,
-];
-
-const validateProfessionalId = [
-    param('professionalId')
-        .notEmpty().withMessage('El ID del profesional es requerido')
-        .isInt({ min: 1 }).withMessage('El ID del profesional debe ser un número entero positivo'),
-    handleValidationErrors,
-];
-
-const validateUnitId = [
-    param('unitId')
-        .notEmpty().withMessage('El ID de la unidad es requerido')
-        .isInt({ min: 1 }).withMessage('El ID de la unidad debe ser un número entero positivo'),
-    handleValidationErrors,
-];
-
-const validateSearchByName = [
-    query('nombre')
+    
+    query('nombreProfesional')
         .optional()
-        .isLength({ min: 1, max: 100 }).withMessage('El nombre debe tener entre 1 y 100 caracteres')
+        .isLength({ min: 1, max: 100 }).withMessage('El nombre del profesional debe tener entre 1 y 100 caracteres')
         .trim(),
     
-    query('id')
+    query('nombreUnidad')
         .optional()
-        .isInt({ min: 1 }).withMessage('El ID debe ser un número entero positivo'),
+        .isLength({ min: 1, max: 100 }).withMessage('El nombre de la unidad debe tener entre 1 y 100 caracteres')
+        .trim(),
     
-    query().custom((value, { req }) => {
-        if (!req.query.nombre && !req.query.id) {
-            throw new Error('Debe proporcionar al menos "nombre" o "id" para la búsqueda');
-        }
-        return true;
-    }),
+    query('profesional')
+        .optional()
+        .isInt({ min: 1 }).withMessage('El ID del profesional debe ser un número entero positivo'),
+    
+    query('unidad')
+        .optional()
+        .isInt({ min: 1 }).withMessage('El ID de la unidad debe ser un número entero positivo'),
+    
+    query('estado')
+        .optional()
+        .isIn(ALLOWED_STATUSES).withMessage(`El estado debe ser uno de los siguientes: ${ALLOWED_STATUSES.join(', ')}`),
+    
+    query('fechaDesde')
+        .optional()
+        .isISO8601().withMessage('La fecha desde debe ser una fecha válida (formato ISO 8601)'),
+    
+    query('fechaHasta')
+        .optional()
+        .isISO8601().withMessage('La fecha hasta debe ser una fecha válida (formato ISO 8601)'),
     
     handleValidationErrors,
 ];
@@ -166,8 +163,5 @@ module.exports = {
     validateUpdate,
     validateId,
     validateList,
-    validateProfessionalId,
-    validateUnitId,
-    validateSearchByName,
 };
 

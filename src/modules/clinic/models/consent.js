@@ -16,7 +16,7 @@ module.exports = (sequelize, DataTypes) => {
     peopleId: DataTypes.INTEGER,
     procedureType: DataTypes.STRING,
     consentDate: DataTypes.DATE,
-    method: DataTypes.ENUM('Firma digital', 'Aceptación verbal con registro'),
+    method: DataTypes.ENUM('firma digital', 'aceptación verbal con registro'),
     fileId: DataTypes.INTEGER
   }, {
     sequelize,

@@ -2,9 +2,6 @@ const { Router } = require('express');
 const {
   listHandler,
   getHandler,
-  getByEpisodeHandler,
-  getByProfessionalHandler,
-  getByDateRangeHandler,
   createHandler,
   updateHandler,
   getVersionHistoryHandler,
@@ -16,20 +13,15 @@ const {
   validateCreate,
   validateUpdate,
   validateId,
-  validateEpisodeId,
-  validateProfessionalId,
   validateList,
-  validateDateRange,
   validateVersionId,
   validateCompareVersions,
 } = require('../validators/ClinicalNoteValidator');
 
 const router = Router();
 
-router.get('/rango-fechas', validateDateRange, getByDateRangeHandler);
-router.get('/episodio/:episodeId', validateEpisodeId, getByEpisodeHandler);
-router.get('/profesional/:professionalId', validateProfessionalId, getByProfessionalHandler);
-
+// Rutas CRUD estándar - usar query params para filtrar:
+// ?episodio=1, ?profesional=2, ?fechaDesde=2024-01-01, ?fechaHasta=2024-12-31
 router.get('/', validateList, listHandler);
 router.post('/', validateCreate, createHandler);
 router.get('/:id', validateId, getHandler);

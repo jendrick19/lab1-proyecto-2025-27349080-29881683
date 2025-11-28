@@ -29,12 +29,18 @@ const buildAgeFilter = (age) => {
   };
 };
 
-const buildWhere = ({ documento, edad, sexo, nombre, estado }) => {
+const buildWhere = ({ tipoDocumento, numeroDocumento, edad, sexo, nombres, apellidos, estado }) => {
   const where = {};
 
-  if (documento) {
+  // Filtro por tipo de documento (case-insensitive, normalizado a minúsculas)
+  if (tipoDocumento) {
+    where.documentType = tipoDocumento.toLowerCase();
+  }
+
+  // Filtro por número de documento (búsqueda parcial)
+  if (numeroDocumento) {
     where.documentId = {
-      [Op.like]: `%${documento}%`,
+      [Op.like]: `%${numeroDocumento}%`,
     };
   }
 
@@ -42,19 +48,16 @@ const buildWhere = ({ documento, edad, sexo, nombre, estado }) => {
     where.gender = sexo;
   }
 
-  if (nombre) {
-    where[Op.or] = [
-      {
-        names: {
-          [Op.like]: `%${nombre}%`,
-        },
-      },
-      {
-        surNames: {
-          [Op.like]: `%${nombre}%`,
-        },
-      },
-    ];
+  if (nombres) {
+    where.names = {
+      [Op.like]: `%${nombres}%`,
+    };
+  }
+
+  if (apellidos) {
+    where.surNames = {
+      [Op.like]: `%${apellidos}%`,
+    };
   }
 
   if (edad !== undefined) {

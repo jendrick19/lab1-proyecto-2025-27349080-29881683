@@ -115,26 +115,26 @@ module.exports = {
     // ===== CREAR DIAGNÓSTICOS =====
     // Códigos CIE-10 comunes y sus descripciones
     const diagnosticos = [
-      { code: 'J06.9', description: 'Infección aguda de las vías respiratorias superiores', type: 'Definitivo' },
-      { code: 'R10.4', description: 'Dolores abdominales, otros y los no especificados', type: 'Presuntivo' },
-      { code: 'I10', description: 'Hipertensión esencial (primaria)', type: 'Definitivo' },
-      { code: 'E11.9', description: 'Diabetes mellitus no insulinodependiente, sin mención de complicación', type: 'Definitivo' },
-      { code: 'M54.5', description: 'Dolor lumbar', type: 'Presuntivo' },
-      { code: 'K21.9', description: 'Enfermedad del reflujo gastroesofágico sin esofagitis', type: 'Presuntivo' },
-      { code: 'R51', description: 'Cefalea', type: 'Presuntivo' },
-      { code: 'E78.5', description: 'Hiperlipidemia, no especificada', type: 'Definitivo' },
-      { code: 'J45.9', description: 'Asma, no especificada', type: 'Definitivo' },
-      { code: 'M25.5', description: 'Dolor en articulación', type: 'Presuntivo' },
-      { code: 'R42', description: 'Mareo y vértigo', type: 'Presuntivo' },
-      { code: 'L30.9', description: 'Dermatitis, no especificada', type: 'Presuntivo' },
-      { code: 'I20.9', description: 'Angina de pecho, no especificada', type: 'Presuntivo' },
-      { code: 'R50.9', description: 'Fiebre, no especificada', type: 'Presuntivo' },
-      { code: 'Z00.0', description: 'Examen médico general', type: 'Definitivo' },
-      { code: 'K59.0', description: 'Estreñimiento', type: 'Presuntivo' },
-      { code: 'R07.4', description: 'Dolor torácico, no especificado', type: 'Presuntivo' },
-      { code: 'H52.1', description: 'Miopía', type: 'Definitivo' },
-      { code: 'M79.3', description: 'Panículo, no especificado', type: 'Presuntivo' },
-      { code: 'Z09', description: 'Examen de seguimiento consecutivo a tratamiento', type: 'Definitivo' }
+      { code: 'J06.9', description: 'Infección aguda de las vías respiratorias superiores', type: 'definitivo' },
+      { code: 'R10.4', description: 'Dolores abdominales, otros y los no especificados', type: 'presuntivo' },
+      { code: 'I10', description: 'Hipertensión esencial (primaria)', type: 'definitivo' },
+      { code: 'E11.9', description: 'Diabetes mellitus no insulinodependiente, sin mención de complicación', type: 'definitivo' },
+      { code: 'M54.5', description: 'Dolor lumbar', type: 'presuntivo' },
+      { code: 'K21.9', description: 'Enfermedad del reflujo gastroesofágico sin esofagitis', type: 'presuntivo' },
+      { code: 'R51', description: 'Cefalea', type: 'presuntivo' },
+      { code: 'E78.5', description: 'Hiperlipidemia, no especificada', type: 'definitivo' },
+      { code: 'J45.9', description: 'Asma, no especificada', type: 'definitivo' },
+      { code: 'M25.5', description: 'Dolor en articulación', type: 'presuntivo' },
+      { code: 'R42', description: 'Mareo y vértigo', type: 'presuntivo' },
+      { code: 'L30.9', description: 'Dermatitis, no especificada', type: 'presuntivo' },
+      { code: 'I20.9', description: 'Angina de pecho, no especificada', type: 'presuntivo' },
+      { code: 'R50.9', description: 'Fiebre, no especificada', type: 'presuntivo' },
+      { code: 'Z00.0', description: 'Examen médico general', type: 'definitivo' },
+      { code: 'K59.0', description: 'Estreñimiento', type: 'presuntivo' },
+      { code: 'R07.4', description: 'Dolor torácico, no especificado', type: 'presuntivo' },
+      { code: 'H52.1', description: 'Miopía', type: 'definitivo' },
+      { code: 'M79.3', description: 'Panículo, no especificado', type: 'presuntivo' },
+      { code: 'Z09', description: 'Examen de seguimiento consecutivo a tratamiento', type: 'definitivo' }
     ];
 
     const diagnosis = [];

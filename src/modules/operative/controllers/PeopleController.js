@@ -67,10 +67,12 @@ const listHandler = async (req, res, next) => {
       limit = 20,
       sortBy = 'apellidos',
       sortOrder = 'asc',
-      documento,
+      tipoDocumento,
+      numeroDocumento,
       edad,
       sexo,
-      nombre,
+      nombres,
+      apellidos,
       estado,
     } = req.query;
 
@@ -80,10 +82,12 @@ const listHandler = async (req, res, next) => {
       sortBy,
       sortOrder,
       filters: {
-        documento,
+        tipoDocumento,
+        numeroDocumento,
         edad,
         sexo,
-        nombre,
+        nombres,
+        apellidos,
         estado,
       },
     });

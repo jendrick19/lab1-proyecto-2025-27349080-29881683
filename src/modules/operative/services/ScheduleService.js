@@ -1,6 +1,8 @@
+const { Op } = require('sequelize');
 const scheduleRepository = require('../repositories/ScheduleRepository');
 const { buildPaginationParams, buildPaginationResponse } = require('../../../shared/utils/paginationHelper');
 const { NotFoundError, BusinessLogicError } = require('../../../shared/errors/CustomErrors');
+const { addDateRangeToWhere } = require('../../../shared/utils/dateRangeHelper');
 
 const ALLOWED_STATUSES = [
     'abierta',
@@ -32,11 +34,65 @@ const validateCapacity = (capacity) => {
     }
 };
 
-const listSchedules = async ({ page, limit }) => {
+const buildWhere = ({ profesional, unidad, estado, fechaDesde, fechaHasta }) => {
+    const where = {};
+
+    if (profesional) {
+        where.professionalId = Number(profesional);
+    }
+
+    if (unidad) {
+        where.unitId = Number(unidad);
+    }
+
+    if (estado) {
+        where.status = estado;
+    }
+
+    // Filtro por rango de fechas en startTime
+    addDateRangeToWhere(where, 'startTime', fechaDesde, fechaHasta);
+
+    return where;
+};
+
+const listSchedules = async ({ page, limit, filters = {} }) => {
     const { safePage, safeLimit, offset } = buildPaginationParams(page, limit);
 
+    const where = buildWhere(filters);
+    const include = [];
+
+    // Filtro por nombre de profesional
+    if (filters.nombreProfesional) {
+        include.push({
+            association: 'professional',
+            where: {
+                [Op.or]: [
+                    { names: { [Op.like]: `%${filters.nombreProfesional}%` } },
+                    { surNames: { [Op.like]: `%${filters.nombreProfesional}%` } }
+                ]
+            },
+            required: true
+        });
+    } else {
+        include.push({ association: 'professional', required: false });
+    }
+
+    // Filtro por nombre de unidad
+    if (filters.nombreUnidad) {
+        include.push({
+            association: 'careUnit',
+            where: {
+                name: { [Op.like]: `%${filters.nombreUnidad}%` }
+            },
+            required: true
+        });
+    } else {
+        include.push({ association: 'careUnit', required: false });
+    }
+
     const { count, rows } = await scheduleRepository.findAndCountAll({
-        where: {},
+        where,
+        include,
         offset,
         limit: safeLimit,
         order: [['startTime', 'ASC']],
@@ -88,43 +144,11 @@ const deleteSchedule = async (id) => {
     return scheduleRepository.deleteSchedule(schedule);
 };
 
-const getSchedulesByProfessional = async (professionalId) => {
-    return scheduleRepository.findByProfessionalId(professionalId, { 
-        status: 'abierta' 
-    });
-};
-
-const getSchedulesByCareUnit = async (unitId) => {
-    return scheduleRepository.findByUnitId(unitId, { 
-        status: 'abierta' 
-    });
-};
-
-const searchSchedulesByProfessionalName = async (searchTerm) => {
-    if (!searchTerm || searchTerm.trim() === '') {
-        throw new BusinessLogicError('Debe proporcionar un término de búsqueda');
-    }
-
-    return scheduleRepository.findByProfessionalName(searchTerm.trim());
-};
-
-const searchSchedulesByCareUnitName = async (searchTerm) => {
-    if (!searchTerm || searchTerm.trim() === '') {
-        throw new BusinessLogicError('Debe proporcionar un término de búsqueda');
-    }
-
-    return scheduleRepository.findByCareUnitName(searchTerm.trim());
-};
-
 module.exports = {
     listSchedules,
     getScheduleById,
     createSchedule,
     updateSchedule,
     deleteSchedule,
-    getSchedulesByProfessional,
-    getSchedulesByCareUnit,
-    searchSchedulesByProfessionalName,
-    searchSchedulesByCareUnitName,
 };
 

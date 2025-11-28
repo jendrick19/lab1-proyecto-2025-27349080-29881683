@@ -13,7 +13,7 @@ module.exports = {
         type: Sequelize.INTEGER,
         allowNull: false,
         references: {
-            model: 'PeopleAttendeds', // FK a la tabla Patients (tu entidad PersonaAtendida)
+            model: 'PeopleAttendeds', 
             key: 'id'
         },
         onUpdate: 'CASCADE',
@@ -26,11 +26,11 @@ module.exports = {
         type: Sequelize.STRING
       },
       type: {
-        type: Sequelize.ENUM('Consulta', 'Procedimiento', 'Control', 'Urgencia'), 
+        type: Sequelize.ENUM('consulta', 'procedimiento', 'control', 'urgencia'), 
         allowNull: false
       },
       status: {
-        type: Sequelize.ENUM('Abierto', 'Cerrado'),
+        type: Sequelize.ENUM('abierto', 'cerrado'),
         allowNull: false,
         defaultValue: 'Abierto'
       },

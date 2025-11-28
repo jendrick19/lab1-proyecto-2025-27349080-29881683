@@ -24,7 +24,7 @@ const mapModelToResponse = (appointment) => {
           apellidos: appointment.professional.surNames,
         }
       : undefined,
-    scheduleId: appointment.scheduleId,
+    agendaId: appointment.scheduleId,
     unidad: appointment.careUnit
       ? {
           id: appointment.careUnit.id,
@@ -47,7 +47,7 @@ const mapRequestToModel = (body) => {
   if (body.pacienteId !== undefined) payload.peopleId = body.pacienteId;
   if (body.profesionalId !== undefined) payload.professionalId = body.profesionalId;
   if (body.unidadId !== undefined) payload.unitId = body.unidadId;
-  if (body.scheduleId !== undefined) payload.scheduleId = body.scheduleId;
+  if (body.agendaId !== undefined) payload.scheduleId = body.agendaId;
   if (body.inicio !== undefined) payload.startTime = body.inicio;
   if (body.fin !== undefined) payload.endTime = body.fin;
   if (body.canal !== undefined) payload.channel = body.canal;
@@ -68,7 +68,7 @@ const listHandler = async (req, res, next) => {
       nombreProfesional,
       paciente,
       profesional,
-      scheduleId,
+      agendaId,
       unidadId,
       estado,
       fechaDesde,
@@ -85,7 +85,7 @@ const listHandler = async (req, res, next) => {
         nombreProfesional,
         paciente,
         profesional,
-        scheduleId,
+        agendaId,
         unidadId,
         estado,
         fechaDesde,

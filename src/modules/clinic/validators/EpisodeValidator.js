@@ -9,8 +9,8 @@ const db = require('../../../../database/models');
 
 const { PeopleAttended } = db.modules.operative;
 
-const VALID_STATUSES = ['Abierto', 'Cerrado'];
-const VALID_TYPES = ['Consulta', 'Procedimiento', 'Control', 'Urgencia'];
+const VALID_STATUSES = ['abierto', 'cerrado'];
+const VALID_TYPES = ['consulta', 'procedimiento', 'control', 'urgencia'];
 
 // Validar que el paciente existe
 const checkPeopleExists = async (value) => {
@@ -48,10 +48,12 @@ const validateCreate = [
 
   body('tipo')
     .notEmpty().withMessage('El tipo es requerido')
+    .customSanitizer((value) => value ? value.toLowerCase() : value)
     .isIn(VALID_TYPES).withMessage(`El tipo debe ser uno de los siguientes: ${VALID_TYPES.join(', ')}`),
 
   body('estado')
     .optional()
+    .customSanitizer((value) => value ? value.toLowerCase() : value)
     .isIn(VALID_STATUSES).withMessage(`El estado debe ser uno de los siguientes: ${VALID_STATUSES.join(', ')}`),
 
   handleValidationErrors,
@@ -77,10 +79,12 @@ const validateUpdate = [
 
   body('tipo')
     .optional()
+    .customSanitizer((value) => value ? value.toLowerCase() : value)
     .isIn(VALID_TYPES).withMessage(`El tipo debe ser uno de los siguientes: ${VALID_TYPES.join(', ')}`),
 
   body('estado')
     .optional()
+    .customSanitizer((value) => value ? value.toLowerCase() : value)
     .isIn(VALID_STATUSES).withMessage(`El estado debe ser uno de los siguientes: ${VALID_STATUSES.join(', ')}`),
 
   handleValidationErrors,
@@ -117,6 +121,12 @@ const validateList = [
 
   query('estado')
     .optional()
+    .customSanitizer((value) => {
+      if (Array.isArray(value)) {
+        return value.map(v => v ? v.toLowerCase() : v);
+      }
+      return value ? value.toLowerCase() : value;
+    })
     .custom((value) => {
       // Permitir un solo estado o múltiples estados separados por coma
       const estados = Array.isArray(value) ? value : [value];
@@ -131,6 +141,12 @@ const validateList = [
 
   query('tipo')
     .optional()
+    .customSanitizer((value) => {
+      if (Array.isArray(value)) {
+        return value.map(v => v ? v.toLowerCase() : v);
+      }
+      return value ? value.toLowerCase() : value;
+    })
     .custom((value) => {
       // Permitir un solo tipo o múltiples tipos separados por coma
       const tipos = Array.isArray(value) ? value : [value];
@@ -165,65 +181,10 @@ const validateList = [
   handleValidationErrors,
 ];
 
-/**
- * Validaciones para buscar episodios por persona (nombre o documento)
- */
-const validateSearchByPerson = [
-  ...validatePagination(),
-  ...validateSorting(['fecha', 'estado', 'tipo', 'createdAt']),
-
-  query('nombre')
-    .optional()
-    .isLength({ min: 1, max: 100 }).withMessage('El nombre debe tener entre 1 y 100 caracteres')
-    .trim(),
-
-  query('tipoDocumento')
-    .optional()
-    .isIn(['Cedula', 'RIF', 'Pasaporte', 'Otro']).withMessage('Tipo de documento inválido'),
-
-  query('numeroDocumento')
-    .optional()
-    .isLength({ min: 1, max: 20 }).withMessage('El número de documento debe tener entre 1 y 20 caracteres')
-    .trim()
-    .custom((value, { req }) => {
-      // Si se proporciona numeroDocumento, tipoDocumento debe estar presente
-      if (value && !req.query.tipoDocumento) {
-        throw new Error('Debe proporcionar tipoDocumento cuando se proporciona numeroDocumento');
-      }
-      return true;
-    }),
-
-  query('tipoDocumento')
-    .optional()
-    .custom((value, { req }) => {
-      // Si se proporciona tipoDocumento, numeroDocumento debe estar presente
-      if (value && !req.query.numeroDocumento) {
-        throw new Error('Debe proporcionar numeroDocumento cuando se proporciona tipoDocumento');
-      }
-      return true;
-    }),
-
-  // Validación personalizada para asegurar que al menos uno de los criterios esté presente
-  query('nombre')
-    .custom((value, { req }) => {
-      const hasNombre = !!req.query.nombre;
-      const hasDocumento = !!(req.query.tipoDocumento && req.query.numeroDocumento);
-      
-      if (!hasNombre && !hasDocumento) {
-        throw new Error('Debe proporcionar "nombre" o "tipoDocumento" y "numeroDocumento" para buscar');
-      }
-      
-      return true;
-    }),
-
-  handleValidationErrors,
-];
-
 module.exports = {
   validateCreate,
   validateUpdate,
   validateId,
   validateList,
-  validateSearchByPerson,
 };
 

@@ -1,10 +1,11 @@
 const { Op } = require('sequelize');
 const consentRepository = require('../repositories/ConsentRepository');
 const { buildPaginationParams, buildPaginationResponse } = require('../../../shared/utils/paginationHelper');
+const { addDateRangeToWhere } = require('../../../shared/utils/dateRangeHelper');
 const { NotFoundError, BusinessLogicError } = require('../../../shared/errors/CustomErrors');
 const db = require('../../../../database/models');
 
-const VALID_METHODS = ['Firma digital', 'Aceptación verbal con registro'];
+const VALID_METHODS = ['firma digital', 'aceptación verbal con registro'];
 
 const SORT_FIELDS = {
   fecha: 'consentDate',
@@ -14,18 +15,27 @@ const SORT_FIELDS = {
   createdAt: 'createdAt',
 };
 
+const normalizeMethod = (method) => {
+  if (!method || typeof method !== 'string') {
+    return null;
+  }
+  return method.toLowerCase().trim();
+};
+
 const validateConsentMethod = (method) => {
   if (!method) {
     throw new BusinessLogicError('El método de consentimiento es requerido');
   }
 
-  if (!VALID_METHODS.includes(method)) {
+  const normalizedMethod = normalizeMethod(method);
+
+  if (!VALID_METHODS.includes(normalizedMethod)) {
     throw new BusinessLogicError(
       `Método de consentimiento "${method}" no es válido. Métodos válidos: ${VALID_METHODS.join(', ')}`
     );
   }
 
-  return true;
+  return normalizedMethod;
 };
 
 const validatePeopleExists = async (peopleId) => {
@@ -38,7 +48,7 @@ const validatePeopleExists = async (peopleId) => {
   return people;
 };
 
-const buildWhere = ({ persona, procedimiento, metodo, fechaDesde, fechaHasta }) => {
+const buildWhere = ({ persona, documento, procedimiento, metodo, fechaDesde, fechaHasta }) => {
   const where = {};
 
   if (persona) {
@@ -52,18 +62,10 @@ const buildWhere = ({ persona, procedimiento, metodo, fechaDesde, fechaHasta }) 
   }
 
   if (metodo) {
-    where.method = metodo;
+    where.method = normalizeMethod(metodo);
   }
 
-  if (fechaDesde || fechaHasta) {
-    where.consentDate = {};
-    if (fechaDesde) {
-      where.consentDate[Op.gte] = new Date(fechaDesde);
-    }
-    if (fechaHasta) {
-      where.consentDate[Op.lte] = new Date(fechaHasta);
-    }
-  }
+  addDateRangeToWhere(where, 'consentDate', fechaDesde, fechaHasta);
 
   return where;
 };
@@ -82,11 +84,32 @@ const listConsents = async ({
 
   const where = buildWhere(filters || {});
 
+  // Si se filtra por documento, incluir la relación con PeopleAttended
+  const include = [];
+  if (filters && filters.documento) {
+    include.push({
+      model: db.modules.operative.PeopleAttended,
+      as: 'peopleAttended',
+      where: {
+        documentId: {
+          [Op.like]: `%${filters.documento}%`
+        }
+      },
+      required: true
+    });
+  } else {
+    include.push({
+      model: db.modules.operative.PeopleAttended,
+      as: 'peopleAttended'
+    });
+  }
+
   const { count, rows } = await consentRepository.findAndCountAll({
     where,
     offset,
     limit: safeLimit,
     order: [[orderField, orderDirection]],
+    include,
   });
 
   return buildPaginationResponse(rows, count, safePage, safeLimit);
@@ -140,7 +163,10 @@ const createConsent = async (consentData) => {
 
   await validatePeopleExists(consentData.peopleId);
 
-  validateConsentMethod(consentData.method);
+  // Normalizar el método a minúsculas
+  if (consentData.method) {
+    consentData.method = validateConsentMethod(consentData.method);
+  }
 
   if (!consentData.consentDate) {
     consentData.consentDate = new Date();
@@ -157,7 +183,8 @@ const updateConsent = async (id, payload) => {
   }
 
   if (payload.method !== undefined && payload.method !== consent.method) {
-    validateConsentMethod(payload.method);
+    // Normalizar el método a minúsculas
+    payload.method = validateConsentMethod(payload.method);
   }
 
   return consentRepository.update(consent, payload);
@@ -177,7 +204,5 @@ module.exports = {
   createConsent,
   updateConsent,
   deleteConsent,
-  validateConsentMethod,
-  validatePeopleExists,
 };
 

@@ -27,22 +27,19 @@ const SORT_FIELDS = {
   createdAt: 'createdAt',
 };
 
-const buildWhere = ({ nombre, estado, especialidad }) => {
+const buildWhere = ({ nombres, apellidos, estado, especialidad }) => {
   const where = {};
  
-  if (nombre) {
-    where[Op.or] = [
-      {
-        names: {
-          [Op.like]: `%${nombre}%`,
-        },
-      },
-      {
-        surNames: {
-          [Op.like]: `%${nombre}%`,
-        },
-      },
-    ];
+  if (nombres) {
+    where.names = {
+      [Op.like]: `%${nombres}%`,
+    };
+  }
+
+  if (apellidos) {
+    where.surNames = {
+      [Op.like]: `%${apellidos}%`,
+    };
   }
   
   if (especialidad) {

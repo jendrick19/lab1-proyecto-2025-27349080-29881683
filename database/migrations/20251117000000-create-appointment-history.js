@@ -21,11 +21,11 @@ module.exports = {
         onDelete: 'CASCADE'
       },
       oldStatus: {
-        type: Sequelize.ENUM('Solicitada', 'Confirmada', 'Cumplida', 'Cancelada', 'No asistio'),
+        type: Sequelize.ENUM('solicitada', 'confirmada', 'cumplida', 'cancelada', 'no asistio'),
         allowNull: true
       },
       newStatus: {
-        type: Sequelize.ENUM('Solicitada', 'Confirmada', 'Cumplida', 'Cancelada', 'No asistio'),
+        type: Sequelize.ENUM('solicitada', 'confirmada', 'cumplida', 'cancelada', 'no asistio'),
         allowNull: true
       },
       oldStartTime: {

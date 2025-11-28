@@ -14,18 +14,30 @@ const SORT_FIELDS = {
   createdAt: 'createdAt',
 };
 
+/**
+ * Normaliza el tipo de diagnóstico a minúsculas para evitar problemas de case sensitivity
+ */
+const normalizeType = (type) => {
+  if (!type || typeof type !== 'string') {
+    return null;
+  }
+  return type.toLowerCase().trim();
+};
+
 const validateDiagnosisType = (type) => {
   if (!type) {
     throw new BusinessLogicError('El tipo de diagnóstico es requerido');
   }
 
-  if (!VALID_TYPES.includes(type.toLowerCase())) {
+  const normalizedType = normalizeType(type);
+
+  if (!VALID_TYPES.includes(normalizedType)) {
     throw new BusinessLogicError(
       `Tipo de diagnóstico "${type}" no es válido. Tipos válidos: ${VALID_TYPES.join(', ')}`
     );
   }
 
-  return true;
+  return normalizedType;
 };
 
 const validateEpisodeExists = async (episodeId) => {
@@ -35,7 +47,7 @@ const validateEpisodeExists = async (episodeId) => {
     throw new NotFoundError('Episodio no encontrado');
   }
 
-  if (episode.status === 'Cerrado') {
+  if (episode.status === 'cerrado') {
     throw new BusinessLogicError('No se pueden crear o modificar diagnósticos en un episodio cerrado');
   }
 
@@ -56,7 +68,7 @@ const buildWhere = ({ episodio, codigo, tipo, principal }) => {
   }
 
   if (tipo) {
-    where.type = tipo.toLowerCase();
+    where.type = normalizeType(tipo);
   }
 
   if (principal !== undefined) {
@@ -135,14 +147,14 @@ const searchDiagnosisByCode = async (code, { page, limit, sortBy, sortOrder }) =
 };
 
 const getDiagnosisByType = async (type, { page, limit, sortBy, sortOrder }) => {
-  validateDiagnosisType(type);
+  const normalizedType = validateDiagnosisType(type);
 
   const { safePage, safeLimit, offset } = buildPaginationParams(page, limit);
 
   const orderField = SORT_FIELDS[sortBy] || SORT_FIELDS.createdAt;
   const orderDirection = sortOrder === 'desc' ? 'DESC' : 'ASC';
 
-  const { count, rows } = await diagnosisRepository.findByType(type.toLowerCase(), {
+  const { count, rows } = await diagnosisRepository.findByType(normalizedType, {
     offset,
     limit: safeLimit,
     order: [[orderField, orderDirection]]
@@ -165,10 +177,10 @@ const createDiagnosis = async (diagnosisData) => {
   // Validar episodio existe y está abierto
   await validateEpisodeExists(diagnosisData.episodeId);
 
-  // Validar tipo (lógica de negocio)
-  validateDiagnosisType(diagnosisData.type);
-
-  diagnosisData.type = diagnosisData.type.toLowerCase();
+  // Validar y normalizar tipo (lógica de negocio)
+  if (diagnosisData.type) {
+    diagnosisData.type = validateDiagnosisType(diagnosisData.type);
+  }
 
   if (diagnosisData.isPrimary === undefined) {
     diagnosisData.isPrimary = false;
@@ -198,8 +210,8 @@ const updateDiagnosis = async (id, payload) => {
   }
 
   if (payload.type !== undefined && payload.type !== diagnosis.type) {
-    validateDiagnosisType(payload.type);
-    payload.type = payload.type.toLowerCase();
+    // Normalizar el tipo a minúsculas
+    payload.type = validateDiagnosisType(payload.type);
   }
 
   if (payload.isPrimary !== undefined && payload.isPrimary !== diagnosis.isPrimary) {
@@ -280,7 +292,5 @@ module.exports = {
   updateDiagnosis,
   changePrincipalDiagnosis,
   deleteDiagnosis,
-  validateDiagnosisType,
-  validateEpisodeExists,
 };
 

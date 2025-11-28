@@ -3,8 +3,6 @@ const {
   listHandler,
   getHandler,
   getByEpisodeHandler,
-  searchByCodeHandler,
-  getByTypeHandler,
   getPrincipalHandler,
   createHandler,
   updateHandler,
@@ -17,16 +15,11 @@ const {
   validateId,
   validateEpisodeId,
   validateList,
-  validateSearchByCode,
-  validateType,
   validatePrincipalByEpisode,
   validateChangePrincipal,
 } = require('../validators/DiagnosisValidator');
 
 const router = Router();
-
-router.get('/buscar/codigo', validateSearchByCode, searchByCodeHandler);
-router.get('/tipo/:type', validateType, getByTypeHandler);
 
 router.get('/', validateList, listHandler);
 router.post('/', validateCreate, createHandler);
