@@ -1,5 +1,7 @@
 'use strict';
 
+const bcrypt = require('bcrypt');
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
@@ -27,16 +29,37 @@ module.exports = {
       'Oftalmología', 'Ginecología', 'Psiquiatría', 'Medicina General', 'Odontología'
     ];
 
-    // Generar 20 usuarios
+    // Generar 20 usuarios con passwords hasheados correctamente
     const users = [];
+    const userCredentials = []; // Para guardar las credenciales y mostrarlas al final
+    
+    console.log('\n🔐 Generando usuarios con contraseñas válidas...\n');
+    
     for (let i = 1; i <= 20; i++) {
       const nombre = nombres[i - 1];
+      const apellidoCompleto = apellidos[i - 1];
       const apellido = apellidos[i - 1].split(' ')[0].toLowerCase();
+      const username = `${nombre.toLowerCase()}${apellido}${i}`;
+      const email = `${nombre.toLowerCase()}.${apellido}${i}@hospital.com`;
+      
+      // Contraseña: Password + número (ej: Password1, Password2, etc.)
+      const password = `Password${i}`;
+      const passwordHash = await bcrypt.hash(password, 10);
+      
+      // Guardar credenciales para mostrar al final
+      userCredentials.push({
+        numero: i,
+        nombre: nombre,
+        apellido: apellidoCompleto,
+        username: username,
+        email: email,
+        password: password
+      });
       
       users.push({
-        username: `${nombre.toLowerCase()}${apellido}${i}`,
-        email: `${nombre.toLowerCase()}.${apellido}${i}@hospital.com`,
-        passwordHash: '$2b$10$abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJ',
+        username: username,
+        email: email,
+        passwordHash: passwordHash,
         status: true,
         creationDate: now,
         createdAt: now,
@@ -87,7 +110,22 @@ module.exports = {
     // Insertar profesionales
     await queryInterface.bulkInsert('Profesionals', professionals, {});
 
-    console.log('✅ Seeder ejecutado: 20 usuarios y 20 profesionales creados');
+    console.log('\n✅ Seeder ejecutado: 20 usuarios y 20 profesionales creados\n');
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log('📋 CREDENCIALES DE USUARIOS CREADOS:');
+    console.log('═══════════════════════════════════════════════════════════════\n');
+    
+    userCredentials.forEach(user => {
+      console.log(`${user.numero.toString().padStart(2, '0')}. ${user.nombre} ${user.apellido}`);
+      console.log(`    Username: ${user.username}`);
+      console.log(`    Email:    ${user.email}`);
+      console.log(`    Password: ${user.password}`);
+      console.log('');
+    });
+    
+    console.log('═══════════════════════════════════════════════════════════════');
+    console.log('💡 Todas las contraseñas siguen el patrón: Password1, Password2, etc.');
+    console.log('═══════════════════════════════════════════════════════════════\n');
   },
 
   async down(queryInterface, Sequelize) {

@@ -28,6 +28,10 @@ const modelFactories = [
   require('../../src/modules/clinic/models/Diagnosis'),
   require('../../src/modules/clinic/models/Consent'),
   require('../../src/modules/platform/models/User'),
+  require('../../src/modules/platform/models/Role'),
+  require('../../src/modules/platform/models/Permission'),
+  require('../../src/modules/platform/models/UserRole'),
+  require('../../src/modules/platform/models/RolePermission'),
 ];
 
 modelFactories.forEach(registerModel => {
@@ -62,6 +66,10 @@ db.modules = {
   },
   platform: {
     User: db.User,
+    Role: db.Role,
+    Permission: db.Permission,
+    UserRole: db.UserRole,
+    RolePermission: db.RolePermission,
   },
 };
 

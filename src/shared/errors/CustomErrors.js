@@ -38,6 +38,13 @@ class BusinessLogicError extends AppError {
   }
 }
 
+class UnauthorizedError extends AppError {
+  constructor(message = 'No autorizado') {
+    super(message, 401);
+    this.name = 'UnauthorizedError';
+  }
+}
+
 class InternalError extends AppError {
   constructor(message = 'Error interno del servidor') {
     super(message, 500);
@@ -51,6 +58,7 @@ module.exports = {
   NotFoundError,
   ConflictError,
   BusinessLogicError,
+  UnauthorizedError,
   InternalError,
 };
 

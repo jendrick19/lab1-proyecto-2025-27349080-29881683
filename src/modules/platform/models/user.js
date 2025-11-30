@@ -10,6 +10,11 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'userId',
         as: 'professional'
       });
+
+      User.hasMany(models.UserRole, {
+        foreignKey: 'userId',
+        as: 'userRoles'
+      });
     }
   }
   User.init({
@@ -17,7 +22,9 @@ module.exports = (sequelize, DataTypes) => {
     email: DataTypes.STRING,
     passwordHash: DataTypes.STRING,
     status: DataTypes.BOOLEAN,
-    creationDate: DataTypes.DATE
+    creationDate: DataTypes.DATE,
+    refreshToken: DataTypes.STRING,
+    lastLogin: DataTypes.DATE
   }, {
     sequelize,
     modelName: 'User',
