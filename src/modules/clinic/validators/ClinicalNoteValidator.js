@@ -5,38 +5,9 @@ const {
   validatePagination,
   validateSorting,
 } = require('../../../shared/validators/CommonValidator');
-const db = require('../../../../database/models');
-
-const { Episode } = db.modules.clinic;
-const { Professional } = db.modules.operative;
-
-const checkEpisodeExists = async (value) => {
-  const episode = await Episode.findByPk(value);
-
-  if (!episode) {
-    throw new Error('El episodio especificado no existe');
-  }
-
-  if (episode.status === 'cerrado') {
-    throw new Error('No se pueden crear notas clínicas en un episodio cerrado');
-  }
-
-  return true;
-};
-
-const checkProfessionalExists = async (value) => {
-  const professional = await Professional.findByPk(value);
-
-  if (!professional) {
-    throw new Error('El profesional especificado no existe');
-  }
-
-  if (!professional.status) {
-    throw new Error('El profesional especificado está inactivo');
-  }
-
-  return true;
-};
+// NOTA: Las validaciones de existencia y reglas de negocio (como verificar que el episodio
+// no esté cerrado o que el profesional esté activo) se hacen en el Service, no en el Validator.
+// El Validator solo valida formato y estructura de los datos.
 
 
 const validateSOAPField = (fieldName, displayName) => 
@@ -45,22 +16,14 @@ const validateSOAPField = (fieldName, displayName) =>
     .isLength({ min: 10, max: 5000 }).withMessage(`${displayName} debe tener entre 10 y 5000 caracteres`)
     .trim();
 
-const validateSOAPFieldOptional = (fieldName, displayName) => 
-  body(fieldName)
-    .optional()
-    .isLength({ min: 10, max: 5000 }).withMessage(`${displayName} debe tener entre 10 y 5000 caracteres`)
-    .trim();
-
 const validateCreate = [
   body('episodioId')
     .notEmpty().withMessage('El ID del episodio es requerido')
-    .isInt({ min: 1 }).withMessage('El ID del episodio debe ser un número entero positivo')
-    .custom(checkEpisodeExists),
+    .isInt({ min: 1 }).withMessage('El ID del episodio debe ser un número entero positivo'),
 
   body('profesionalId')
     .notEmpty().withMessage('El ID del profesional es requerido')
-    .isInt({ min: 1 }).withMessage('El ID del profesional debe ser un número entero positivo')
-    .custom(checkProfessionalExists),
+    .isInt({ min: 1 }).withMessage('El ID del profesional debe ser un número entero positivo'),
 
   body('fechaNota')
     .optional()
