@@ -10,7 +10,6 @@ const mapModelToResponse = (person) => {
   if (!person) {
     return null;
   }
-
   return {
     id: person.id,
     tipoDocumento: person.documentType,
@@ -27,11 +26,32 @@ const mapModelToResponse = (person) => {
     estado: person.status,
   };
 };
-
-const mapRequestToModel = (body) => {
+const mapRequestToCreate = (body) => {
+  const payload = {
+    id: Number(body.id),
+    documentType: body.tipoDocumento,
+    documentId: body.numeroDocumento,
+    names: body.nombres,
+    surNames: body.apellidos,
+    dateOfBirth: new Date(body.fechaNacimiento),
+    gender: body.sexo,
+    address: body.direccion,
+    emergencyContact: body.contactoEmergencia,
+  };
+  if (body.telefono !== undefined) payload.phone = body.telefono;
+  if (body.correo !== undefined) payload.email = body.correo;
+  if (body.alergias !== undefined) payload.allergies = body.alergias;
+  if (body.estado !== undefined) {
+    if (typeof body.estado === 'string') {
+      payload.status = ['true', '1', 'activo', 'active'].includes(body.estado.toLowerCase());
+    } else {
+      payload.status = Boolean(body.estado);
+    }
+  }
+  return payload;
+};
+const mapRequestToUpdate = (body) => {
   const payload = {};
-
-  if (body.id !== undefined) payload.id = Number(body.id);
   if (body.tipoDocumento !== undefined) payload.documentType = body.tipoDocumento;
   if (body.numeroDocumento !== undefined) payload.documentId = body.numeroDocumento;
   if (body.nombres !== undefined) payload.names = body.nombres;
@@ -55,11 +75,8 @@ const mapRequestToModel = (body) => {
       payload.status = Boolean(body.estado);
     }
   }
-
   return payload;
 };
-
-
 const listHandler = async (req, res, next) => {
   try {
     const {
@@ -75,7 +92,6 @@ const listHandler = async (req, res, next) => {
       apellidos,
       estado,
     } = req.query;
-
     const result = await listPeople({
       page,
       limit,
@@ -91,7 +107,6 @@ const listHandler = async (req, res, next) => {
         estado,
       },
     });
-
     res.json({
       codigo: 200,
       mensaje: 'Lista de personas obtenida exitosamente',
@@ -102,12 +117,10 @@ const listHandler = async (req, res, next) => {
     next(error);
   }
 };
-
 const getHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
     const person = await getPersonById(id);
-
     return res.json({
       codigo: 200,
       mensaje: 'Persona encontrada',
@@ -117,16 +130,13 @@ const getHandler = async (req, res, next) => {
     return next(error);
   }
 };
-
 const createHandler = async (req, res, next) => {
   try {
-    const payload = mapRequestToModel(req.body);
+    const payload = mapRequestToCreate(req.body);
     if (payload.status === undefined) {
       payload.status = true;
     }
-
     const person = await createPerson(payload);
-
     return res.status(201).json({
       codigo: 201,
       mensaje: 'Persona creada exitosamente',
@@ -136,13 +146,11 @@ const createHandler = async (req, res, next) => {
     return next(error);
   }
 };
-
 const updateHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const payload = mapRequestToModel(req.body);
+    const payload = mapRequestToUpdate(req.body);
     const updated = await updatePerson(id, payload);
-
     return res.json({
       codigo: 200,
       mensaje: 'Persona actualizada exitosamente',
@@ -152,12 +160,10 @@ const updateHandler = async (req, res, next) => {
     return next(error);
   }
 };
-
 const deleteHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
     await softDeletePerson(id);
-
     return res.status(200).json({
       codigo: 200,
       mensaje: 'Persona eliminada exitosamente',
@@ -166,7 +172,6 @@ const deleteHandler = async (req, res, next) => {
     return next(error);
   }
 };
-
 module.exports = {
   listHandler,
   getHandler,
