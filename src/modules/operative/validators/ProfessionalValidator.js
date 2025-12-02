@@ -1,210 +1,1 @@
-const { body, param, query } = require('express-validator');
-const {
-  handleValidationErrors,
-  validateNames,
-  validateNamesOptional,
-  validateSurnames,
-  validateSurnamesOptional,
-  validateEmail,
-  validateEmailOptional,
-  validatePhone,
-  validateStatus,
-  validateIdParam,
-  validatePagination,
-  validateSorting,
-  validateStatusQuery,
-} = require('../../../shared/validators/CommonValidator');
-
-const ALLOWED_SPECIALTIES = [
-  'Cardiología',
-  'Pediatría',
-  'Traumatología',
-  'Dermatología',
-  'Neurología',
-  'Oftalmología',
-  'Ginecología',
-  'Psiquiatría',
-  'Medicina General',
-  'Odontología',
-];
-
-
-
-const checkProfessionalRegisterUniqueness = async (value, { req }) => {
-  const { Op } = require('sequelize');
-  const db = require('../../../../database/models');
-  const { Professional } = db.modules.operative;
-
-  const where = {
-    professionalRegister: value,
-  };
-
-  if (req.params?.id) {
-    where.id = { [Op.ne]: req.params.id };
-  }
-
-  const existingProfessional = await Professional.findOne({ where });
-
-  if (existingProfessional) {
-    throw new Error('El registro profesional ya está registrado');
-  }
-
-  return true;
-};
-
-
-const checkEmailUniqueness = async (value, { req }) => {
-  const { Op } = require('sequelize');
-  const db = require('../../../../database/models');
-  const { Professional } = db.modules.operative;
-
-  const where = {
-    email: value,
-  };
-
-  
-  if (req.params?.id) {
-    where.id = { [Op.ne]: req.params.id };
-  }
-
-  const existingProfessional = await Professional.findOne({ where });
-
-  if (existingProfessional) {
-    throw new Error('El correo electrónico ya está registrado');
-  }
-
-  return true;
-};
-
-
-const checkUsernameUniqueness = async (value) => {
-  const db = require('../../../../database/models');
-  const { User } = db.modules.platform;
-
-  const existingUser = await User.findOne({
-    where: { username: value },
-  });
-
-  if (existingUser) {
-    throw new Error('El nombre de usuario ya está registrado');
-  }
-
-  return true;
-};
-
-
-const validateCreate = [
-  validateNames(),
-  validateSurnames(),
-
-  body('registroProfesional')
-    .notEmpty().withMessage('El registro profesional es requerido')
-    .isLength({ min: 3, max: 50 }).withMessage('El registro profesional debe tener entre 3 y 50 caracteres')
-    .matches(/^[A-Z0-9-]+$/).withMessage('El registro profesional solo puede contener letras mayúsculas, números y guiones')
-    .custom(checkProfessionalRegisterUniqueness),
-
-  body('especialidad')
-    .notEmpty().withMessage('La especialidad es requerida')
-    .isIn(ALLOWED_SPECIALTIES).withMessage(`La especialidad debe ser una de las siguientes: ${ALLOWED_SPECIALTIES.join(', ')}`),
-
-  validateEmail('correo').custom(checkEmailUniqueness),
-  validatePhone('telefono'),
-
-  body('agendaHabilitada')
-    .optional()
-    .isBoolean().withMessage('agendaHabilitada debe ser verdadero o falso'),
-
-  validateStatus('estado'),
-
-  // Validaciones para el usuario
-  body('usuario')
-    .notEmpty().withMessage('Los datos del usuario son requeridos'),
-
-  body('usuario.username')
-    .notEmpty().withMessage('El nombre de usuario es requerido')
-    .isLength({ min: 3, max: 50 }).withMessage('El nombre de usuario debe tener entre 3 y 50 caracteres')
-    .matches(/^[a-zA-Z0-9_]+$/).withMessage('El nombre de usuario solo puede contener letras, números y guiones bajos')
-    .custom(checkUsernameUniqueness),
-
-  body('usuario.email')
-    .notEmpty().withMessage('El correo del usuario es requerido')
-    .isEmail().withMessage('El correo del usuario debe ser una dirección válida')
-    .normalizeEmail(),
-
-  body('usuario.password')
-    .notEmpty().withMessage('La contraseña es requerida')
-    .isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 8 caracteres')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage('La contraseña debe contener al menos una letra minúscula, una mayúscula y un número'),
-
-  body('usuario.estado')
-    .optional()
-    .isBoolean().withMessage('El estado del usuario debe ser verdadero o falso'),
-
-  handleValidationErrors,
-];
-
-/**
- * Validaciones para actualizar un profesional
- * Los campos son opcionales, pero si se envían deben ser válidos
- */
-const validateUpdate = [
-  validateIdParam(),
-  validateNamesOptional(),
-  validateSurnamesOptional(),
-
-  body('registroProfesional')
-    .optional()
-    .isLength({ min: 3, max: 50 }).withMessage('El registro profesional debe tener entre 3 y 50 caracteres')
-    .matches(/^[A-Z0-9-]+$/).withMessage('El registro profesional solo puede contener letras mayúsculas, números y guiones')
-    .custom(checkProfessionalRegisterUniqueness),
-
-  body('especialidad')
-    .optional()
-    .isIn(ALLOWED_SPECIALTIES).withMessage(`La especialidad debe ser una de las siguientes: ${ALLOWED_SPECIALTIES.join(', ')}`),
-
-  validateEmailOptional('correo').custom(checkEmailUniqueness),
-  validatePhone('telefono'),
-
-  body('agendaHabilitada')
-    .optional()
-    .isBoolean().withMessage('agendaHabilitada debe ser verdadero o falso'),
-
-  validateStatus('estado'),
-
-  handleValidationErrors,
-];
-
-/**
- * Validaciones para obtener/eliminar un profesional por ID
- */
-const validateId = [
-  validateIdParam(),
-  handleValidationErrors,
-];
-
-/**
- * Validaciones para listar profesionales (query params)
- */
-const validateList = [
-  ...validatePagination(),
-  ...validateSorting(['nombres', 'apellidos', 'especialidad', 'registro', 'createdAt']),
-
-  query('nombre')
-    .optional()
-    .isLength({ min: 1, max: 100 }).withMessage('El nombre debe tener entre 1 y 100 caracteres'),
-
-  query('especialidad')
-    .optional()
-    .isLength({ min: 1, max: 100 }).withMessage('La especialidad debe tener entre 1 y 100 caracteres'),
-
-  validateStatusQuery(),
-  handleValidationErrors,
-];
-
-module.exports = {
-  validateCreate,
-  validateUpdate,
-  validateId,
-  validateList,
-};
-
+const { body, param, query } = require('express-validator');const {  handleValidationErrors,  validateNames,  validateNamesOptional,  validateSurnames,  validateSurnamesOptional,  validateEmail,  validateEmailOptional,  validatePhone,  validateStatus,  validateIdParam,  validatePagination,  validateSorting,  validateStatusQuery,} = require('../../../shared/validators/CommonValidator');const ALLOWED_SPECIALTIES = [  'Cardiología',  'Pediatría',  'Traumatología',  'Dermatología',  'Neurología',  'Oftalmología',  'Ginecología',  'Psiquiatría',  'Medicina General',  'Odontología',];const checkProfessionalRegisterUniqueness = async (value, { req }) => {  const { Op } = require('sequelize');  const db = require('../../../../database/models');  const { Professional } = db.modules.operative;  const where = {    professionalRegister: value,  };  if (req.params?.id) {    where.id = { [Op.ne]: req.params.id };  }  const existingProfessional = await Professional.findOne({ where });  if (existingProfessional) {    throw new Error('El registro profesional ya está registrado');  }  return true;};const checkEmailUniqueness = async (value, { req }) => {  const { Op } = require('sequelize');  const db = require('../../../../database/models');  const { Professional } = db.modules.operative;  const where = {    email: value,  };  if (req.params?.id) {    where.id = { [Op.ne]: req.params.id };  }  const existingProfessional = await Professional.findOne({ where });  if (existingProfessional) {    throw new Error('El correo electrónico ya está registrado');  }  return true;};const checkUsernameUniqueness = async (value) => {  const db = require('../../../../database/models');  const { User } = db.modules.platform;  const existingUser = await User.findOne({    where: { username: value },  });  if (existingUser) {    throw new Error('El nombre de usuario ya está registrado');  }  return true;};const validateCreate = [  validateNames(),  validateSurnames(),  body('registroProfesional')    .notEmpty().withMessage('El registro profesional es requerido')    .isLength({ min: 3, max: 50 }).withMessage('El registro profesional debe tener entre 3 y 50 caracteres')    .matches(/^[A-Z0-9-]+$/).withMessage('El registro profesional solo puede contener letras mayúsculas, números y guiones')    .custom(checkProfessionalRegisterUniqueness),  body('especialidad')    .notEmpty().withMessage('La especialidad es requerida')    .isIn(ALLOWED_SPECIALTIES).withMessage(`La especialidad debe ser una de las siguientes: ${ALLOWED_SPECIALTIES.join(', ')}`),  validateEmail('correo').custom(checkEmailUniqueness),  validatePhone('telefono'),  body('agendaHabilitada')    .optional()    .isBoolean().withMessage('agendaHabilitada debe ser verdadero o falso'),  validateStatus('estado'),  body('usuario')    .notEmpty().withMessage('Los datos del usuario son requeridos'),  body('usuario.username')    .notEmpty().withMessage('El nombre de usuario es requerido')    .isLength({ min: 3, max: 50 }).withMessage('El nombre de usuario debe tener entre 3 y 50 caracteres')    .matches(/^[a-zA-Z0-9_]+$/).withMessage('El nombre de usuario solo puede contener letras, números y guiones bajos')    .custom(checkUsernameUniqueness),  body('usuario.email')    .notEmpty().withMessage('El correo del usuario es requerido')    .isEmail().withMessage('El correo del usuario debe ser una dirección válida')    .normalizeEmail(),  body('usuario.password')    .notEmpty().withMessage('La contraseña es requerida')    .isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 8 caracteres')    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage('La contraseña debe contener al menos una letra minúscula, una mayúscula y un número'),  body('usuario.estado')    .optional()    .isBoolean().withMessage('El estado del usuario debe ser verdadero o falso'),  handleValidationErrors,];const validateUpdate = [  validateIdParam(),  validateNamesOptional(),  validateSurnamesOptional(),  body('registroProfesional')    .optional()    .isLength({ min: 3, max: 50 }).withMessage('El registro profesional debe tener entre 3 y 50 caracteres')    .matches(/^[A-Z0-9-]+$/).withMessage('El registro profesional solo puede contener letras mayúsculas, números y guiones')    .custom(checkProfessionalRegisterUniqueness),  body('especialidad')    .optional()    .isIn(ALLOWED_SPECIALTIES).withMessage(`La especialidad debe ser una de las siguientes: ${ALLOWED_SPECIALTIES.join(', ')}`),  validateEmailOptional('correo').custom(checkEmailUniqueness),  validatePhone('telefono'),  body('agendaHabilitada')    .optional()    .isBoolean().withMessage('agendaHabilitada debe ser verdadero o falso'),  validateStatus('estado'),  handleValidationErrors,];const validateId = [  validateIdParam(),  handleValidationErrors,];const validateList = [  ...validatePagination(),  ...validateSorting(['nombres', 'apellidos', 'especialidad', 'registro', 'createdAt']),  query('nombre')    .optional()    .isLength({ min: 1, max: 100 }).withMessage('El nombre debe tener entre 1 y 100 caracteres'),  query('especialidad')    .optional()    .isLength({ min: 1, max: 100 }).withMessage('La especialidad debe tener entre 1 y 100 caracteres'),  validateStatusQuery(),  handleValidationErrors,];module.exports = {  validateCreate,  validateUpdate,  validateId,  validateList,};

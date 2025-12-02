@@ -1,9 +1,1 @@
-const { Router } = require('express');
-const accessRoutes = require('./routes');
-
-const router = Router();
-
-router.use('/access', accessRoutes);
-
-module.exports = router;
-
+const { Router } = require('express');const accessRoutes = require('./routes');const router = Router();router.use('/access', accessRoutes);module.exports = router;
