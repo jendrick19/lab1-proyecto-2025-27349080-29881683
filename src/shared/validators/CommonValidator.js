@@ -1,6 +1,28 @@
 const { body, param, query, validationResult } = require('express-validator');
+const crypto = require('crypto');
+
+const pendingErrors = new Map();
+const ERROR_BATCH_SIZE = 2;
+const ERROR_STORAGE_TTL = 5 * 60 * 1000;
+
+const generateRequestKey = (req) => {
+  const method = req.method;
+  const path = req.path;
+  const bodyHash = crypto.createHash('md5').update(JSON.stringify(req.body || {})).digest('hex');
+  return `${method}:${path}:${bodyHash}`;
+};
+
+const cleanupOldErrors = () => {
+  const now = Date.now();
+  for (const [key, data] of pendingErrors.entries()) {
+    if (now - data.timestamp > ERROR_STORAGE_TTL) {
+      pendingErrors.delete(key);
+    }
+  }
+};
 
 const handleValidationErrors = (req, res, next) => {
+  cleanupOldErrors();
 
   const errors = validationResult(req);
 
@@ -10,30 +32,72 @@ const handleValidationErrors = (req, res, next) => {
       err.msg.includes('ya está registrado') || 
       err.msg.includes('ya existe')
     );
+    
+    const requestKey = generateRequestKey(req);
+    const errorOffset = parseInt(req.headers['x-error-offset'] || '0', 10);
+    
+    let storedErrors = pendingErrors.get(requestKey);
+    if (!storedErrors || storedErrors.errors.length !== errorArray.length) {
+      storedErrors = {
+        errors: errorArray,
+        timestamp: Date.now()
+      };
+      pendingErrors.set(requestKey, storedErrors);
+    }
+
+    const totalErrors = storedErrors.errors.length;
+    const startIndex = errorOffset;
+    const endIndex = Math.min(startIndex + ERROR_BATCH_SIZE, totalErrors);
+    const errorsToShow = storedErrors.errors.slice(startIndex, endIndex);
+    const remainingErrors = totalErrors - endIndex;
+
     if (hasDuplicateError) {
-      return res.status(409).json({
+      const response = {
         codigo: 409,
         mensaje: 'Conflicto: recurso duplicado',
         tipo: 'ConflictError',
-        errores: errorArray.map(err => ({
+        errores: errorsToShow.map(err => ({
           campo: err.path,
           mensaje: err.msg,
           valor: err.value,
         })),
-      });
+        totalErrores: totalErrors,
+        erroresMostrados: errorsToShow.length,
+        erroresRestantes: remainingErrors,
+      };
+
+      if (remainingErrors > 0) {
+        response.mensaje = `Conflicto: recurso duplicado (mostrando ${errorsToShow.length} de ${totalErrors})`;
+        response.siguienteOffset = endIndex;
+      }
+
+      return res.status(409).json(response);
     }
 
-    return res.status(400).json({
+    const response = {
       codigo: 400,
       mensaje: 'Errores de validación',
       tipo: 'ValidationError',
-      errores: errorArray.map(err => ({
+      errores: errorsToShow.map(err => ({
         campo: err.path,
         mensaje: err.msg,
         valor: err.value,
       })),
-    });
+      totalErrores: totalErrors,
+      erroresMostrados: errorsToShow.length,
+      erroresRestantes: remainingErrors,
+    };
+
+    if (remainingErrors > 0) {
+      response.mensaje = `Errores de validación (mostrando ${errorsToShow.length} de ${totalErrors})`;
+      response.siguienteOffset = endIndex;
+    }
+
+    return res.status(400).json(response);
   }
+
+  const requestKey = generateRequestKey(req);
+  pendingErrors.delete(requestKey);
 
   return next();
 };
