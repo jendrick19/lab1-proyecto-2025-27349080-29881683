@@ -11,6 +11,7 @@ const findById = async (id) => {
     ]
   });
 };
+
 const findAndCountAll = async ({ where, offset, limit, order, include }) => {
   const defaultInclude = [
     { model: db.modules.operative.Professional, as: 'professional' },
@@ -26,6 +27,7 @@ const findAndCountAll = async ({ where, offset, limit, order, include }) => {
     distinct: true,
   });
 };
+
 const createWithVersion = async (noteData, versionData, transaction = null) => {
   const note = await ClinicalNote.create(noteData, { transaction });
   await ClinicalNoteVersion.create({
@@ -34,6 +36,7 @@ const createWithVersion = async (noteData, versionData, transaction = null) => {
   }, { transaction });
   return findById(note.id);
 };
+
 const findVersionById = async (versionId) => {
   return ClinicalNoteVersion.findByPk(versionId, {
     include: [
@@ -47,24 +50,28 @@ const findVersionById = async (versionId) => {
     ]
   });
 };
+
 const findVersionsByNoteId = async (noteId) => {
   return ClinicalNoteVersion.findAll({
     where: { noteId },
     order: [['versionDate', 'DESC']]
   });
 };
+
 const findLatestVersion = async (noteId) => {
   return ClinicalNoteVersion.findOne({
     where: { noteId },
     order: [['versionDate', 'DESC']]
   });
 };
+
 const createVersion = async (noteId, versionData, transaction = null) => {
   return ClinicalNoteVersion.create({
     noteId,
     ...versionData
   }, { transaction });
 };
+
 module.exports = {
   findById,
   findAndCountAll,
