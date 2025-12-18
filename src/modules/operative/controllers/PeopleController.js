@@ -26,6 +26,7 @@ const mapModelToResponse = (person) => {
     estado: person.status,
   };
 };
+
 const mapRequestToCreate = (body) => {
   const payload = {
     id: Number(body.id),
@@ -38,6 +39,7 @@ const mapRequestToCreate = (body) => {
     address: body.direccion,
     emergencyContact: body.contactoEmergencia,
   };
+
   if (body.telefono !== undefined) payload.phone = body.telefono;
   if (body.correo !== undefined) payload.email = body.correo;
   if (body.alergias !== undefined) payload.allergies = body.alergias;
@@ -50,8 +52,11 @@ const mapRequestToCreate = (body) => {
   }
   return payload;
 };
+
 const mapRequestToUpdate = (body) => {
+  
   const payload = {};
+
   if (body.tipoDocumento !== undefined) payload.documentType = body.tipoDocumento;
   if (body.numeroDocumento !== undefined) payload.documentId = body.numeroDocumento;
   if (body.nombres !== undefined) payload.names = body.nombres;
@@ -62,6 +67,7 @@ const mapRequestToUpdate = (body) => {
       payload.dateOfBirth = date;
     }
   }
+
   if (body.sexo !== undefined) payload.gender = body.sexo;
   if (body.telefono !== undefined) payload.phone = body.telefono;
   if (body.correo !== undefined) payload.email = body.correo;
@@ -77,6 +83,7 @@ const mapRequestToUpdate = (body) => {
   }
   return payload;
 };
+
 const listHandler = async (req, res, next) => {
   try {
     const {
@@ -117,6 +124,7 @@ const listHandler = async (req, res, next) => {
     next(error);
   }
 };
+
 const getHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -130,6 +138,7 @@ const getHandler = async (req, res, next) => {
     return next(error);
   }
 };
+
 const createHandler = async (req, res, next) => {
   try {
     const payload = mapRequestToCreate(req.body);
@@ -146,6 +155,7 @@ const createHandler = async (req, res, next) => {
     return next(error);
   }
 };
+
 const updateHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -160,6 +170,7 @@ const updateHandler = async (req, res, next) => {
     return next(error);
   }
 };
+
 const deleteHandler = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -172,6 +183,7 @@ const deleteHandler = async (req, res, next) => {
     return next(error);
   }
 };
+
 module.exports = {
   listHandler,
   getHandler,
