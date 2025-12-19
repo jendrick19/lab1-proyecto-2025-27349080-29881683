@@ -15,7 +15,6 @@ const {
   validateStatusQuery,
 } = require('../../../shared/validators/CommonValidator');
 
-// Middleware para validar que solo se envíen campos permitidos
 const validateAllowedFields = (allowedFields) => {
   return (req, res, next) => {
     const receivedFields = Object.keys(req.body);
@@ -31,6 +30,7 @@ const validateAllowedFields = (allowedFields) => {
     next();
   };
 };
+
 const ALLOWED_SPECIALTIES = [
   'Cardiología',
   'Pediatría',
@@ -43,6 +43,7 @@ const ALLOWED_SPECIALTIES = [
   'Medicina General',
   'Odontología',
 ];
+
 const checkProfessionalRegisterUniqueness = async (value, { req }) => {
   const { Op } = require('sequelize');
   const db = require('../../../../database/models');
@@ -59,6 +60,7 @@ const checkProfessionalRegisterUniqueness = async (value, { req }) => {
   }
   return true;
 };
+
 const checkEmailUniqueness = async (value, { req }) => {
   const { Op } = require('sequelize');
   const db = require('../../../../database/models');
@@ -75,6 +77,7 @@ const checkEmailUniqueness = async (value, { req }) => {
   }
   return true;
 };
+
 const checkUsernameUniqueness = async (value) => {
   const db = require('../../../../database/models');
   const { User } = db.modules.platform;
@@ -86,6 +89,7 @@ const checkUsernameUniqueness = async (value) => {
   }
   return true;
 };
+
 const validateCreate = [
   validateAllowedFields(['nombres', 'apellidos', 'registroProfesional', 'especialidad', 'correo', 'telefono', 'agendaHabilitada', 'estado', 'userId', 'usuario']),
   validateNames(),
@@ -124,6 +128,7 @@ const validateCreate = [
     .isBoolean().withMessage('El estado del usuario debe ser verdadero o falso'),
   handleValidationErrors,
 ];
+
 const validateUpdate = [
   validateIdParam(),
   validateAllowedFields(['nombres', 'apellidos', 'registroProfesional', 'especialidad', 'correo', 'telefono', 'agendaHabilitada', 'estado', 'userId']),
@@ -145,10 +150,12 @@ const validateUpdate = [
   validateStatus('estado'),
   handleValidationErrors,
 ];
+
 const validateId = [
   validateIdParam(),
   handleValidationErrors,
 ];
+
 const validateList = [
   ...validatePagination(),
   ...validateSorting(['nombres', 'apellidos', 'especialidad', 'registro', 'createdAt']),
@@ -161,6 +168,7 @@ const validateList = [
   validateStatusQuery(),
   handleValidationErrors,
 ];
+
 module.exports = {
   validateCreate,
   validateUpdate,
