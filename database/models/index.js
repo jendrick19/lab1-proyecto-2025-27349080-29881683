@@ -26,6 +26,10 @@ const modelFactories = [
   require('../../src/modules/clinic/models/Episode'),
   require('../../src/modules/clinic/models/Diagnosis'),
   require('../../src/modules/clinic/models/Consent'),
+  require('../../src/modules/clinic/models/Order'),
+  require('../../src/modules/clinic/models/orderitem'),
+  require('../../src/modules/clinic/models/Result'),
+  require('../../src/modules/clinic/models/ResultVersion'),
   require('../../src/modules/platform/models/User'),
 ];
 
@@ -57,6 +61,10 @@ db.modules = {
     Episode: db.Episode,
     Diagnosis: db.Diagnosis,
     Consent: db.Consent,
+    Order: db.Order,
+    OrderItem: db.OrderItem,
+    Result: db.Result,
+    ResultVersion: db.ResultVersion,
   },
   platform: {
     User: db.User,
