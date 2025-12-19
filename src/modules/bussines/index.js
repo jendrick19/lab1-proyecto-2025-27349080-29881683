@@ -1,7 +1,8 @@
 const { Router } = require('express');
-const billingRoutes = require('./routes');
+const bussinessRoutes = require('./routes');
 const router = Router();
 
-router.use('/billing', billingRoutes);
+// Las rutas de bussines se montan directamente sin prefijo adicional
+router.use('/', bussinessRoutes);
 
 module.exports = router;

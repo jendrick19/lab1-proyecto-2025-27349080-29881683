@@ -31,6 +31,8 @@ const modelFactories = [
   require('../../src/modules/clinic/models/Result'),
   require('../../src/modules/clinic/models/ResultVersion'),
   require('../../src/modules/platform/models/User'),
+  require('../../src/modules/bussines/models/Insurer'),
+  require('../../src/modules/bussines/models/Plan'),
 ];
 
 modelFactories.forEach(registerModel => {
@@ -68,6 +70,10 @@ db.modules = {
   },
   platform: {
     User: db.User,
+  },
+  bussines: {
+    Insurer: db.Insurer,
+    Plan: db.Plan,
   },
 };
 module.exports = db;
