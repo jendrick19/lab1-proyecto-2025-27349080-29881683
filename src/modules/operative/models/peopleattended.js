@@ -18,6 +18,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'peopleId',
         as: 'consents'
       });
+      PeopleAttended.hasMany(models.Affiliation, {
+        foreignKey: 'peopleId',
+        as: 'affiliations'
+      });
     }
   }
   PeopleAttended.init({

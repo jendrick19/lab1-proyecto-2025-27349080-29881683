@@ -33,6 +33,9 @@ const modelFactories = [
   require('../../src/modules/platform/models/User'),
   require('../../src/modules/bussines/models/Insurer'),
   require('../../src/modules/bussines/models/Plan'),
+  require('../../src/modules/bussines/models/Affiliation'),
+  require('../../src/modules/bussines/models/Authorization'),
+  require('../../src/modules/bussines/models/Service'),
 ];
 
 modelFactories.forEach(registerModel => {
@@ -74,6 +77,9 @@ db.modules = {
   bussines: {
     Insurer: db.Insurer,
     Plan: db.Plan,
+    Affiliation: db.Affiliation,
+    Authorization: db.Authorization,
+    Service: db.Service,
   },
 };
 module.exports = db;
