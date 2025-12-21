@@ -13,10 +13,11 @@ module.exports = (sequelize, DataTypes) => {
           as: 'invoiceItems'
         });
       }
-      // Relación con Tariffs (cuando se cree el modelo Tariff)
+      // Relación con Tariffs
       if (models.Tariff) {
         Service.hasMany(models.Tariff, {
-          foreignKey: 'prestacionId',
+          foreignKey: 'serviceCode',
+          sourceKey: 'code',
           as: 'tariffs'
         });
       }

@@ -20,6 +20,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'planId',
         as: 'authorizations'
       });
+      Plan.hasMany(models.Tariff, {
+        foreignKey: 'planId',
+        as: 'tariffs'
+      });
     }
   }
   

@@ -4,6 +4,7 @@ const planRoutes = require('./PlanRoutes');
 const affiliationRoutes = require('./AffiliationRoutes');
 const authorizationRoutes = require('./AuthorizationRoutes');
 const serviceRoutes = require('./ServiceRoutes');
+const tariffRoutes = require('./TariffRoutes');
 
 const router = Router();
 
@@ -29,5 +30,8 @@ router.use('/autorizaciones', authorizationRoutes);
 
 // Rutas de prestaciones: /api/bussines/prestaciones
 router.use('/prestaciones', serviceRoutes);
+
+// Rutas de aranceles: /api/bussines/aranceles
+router.use('/aranceles', tariffRoutes);
 
 module.exports = router;
