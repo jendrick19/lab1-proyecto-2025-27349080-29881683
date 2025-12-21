@@ -6,10 +6,11 @@ const {
 module.exports = (sequelize, DataTypes) => {
   class Service extends Model {
     static associate(models) {
-      // Relación con InvoiceItems (cuando se cree el modelo Invoice)
+      // Relación con InvoiceItems
       if (models.InvoiceItem) {
         Service.hasMany(models.InvoiceItem, {
-          foreignKey: 'prestacionId',
+          foreignKey: 'serviceCode',
+          sourceKey: 'code',
           as: 'invoiceItems'
         });
       }

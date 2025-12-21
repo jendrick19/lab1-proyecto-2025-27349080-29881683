@@ -37,6 +37,9 @@ const modelFactories = [
   require('../../src/modules/bussines/models/Authorization'),
   require('../../src/modules/bussines/models/Service'),
   require('../../src/modules/bussines/models/Tariff'),
+  require('../../src/modules/bussines/models/Invoice'),
+  require('../../src/modules/bussines/models/InvoiceItem'),
+  require('../../src/modules/bussines/models/Payment'),
 ];
 
 modelFactories.forEach(registerModel => {
@@ -82,6 +85,9 @@ db.modules = {
     Authorization: db.Authorization,
     Service: db.Service,
     Tariff: db.Tariff,
+    Invoice: db.Invoice,
+    InvoiceItem: db.InvoiceItem,
+    Payment: db.Payment,
   },
 };
 module.exports = db;

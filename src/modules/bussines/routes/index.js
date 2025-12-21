@@ -5,6 +5,9 @@ const affiliationRoutes = require('./AffiliationRoutes');
 const authorizationRoutes = require('./AuthorizationRoutes');
 const serviceRoutes = require('./ServiceRoutes');
 const tariffRoutes = require('./TariffRoutes');
+const invoiceRoutes = require('./InvoiceRoutes');
+const invoiceItemRoutes = require('./InvoiceItemRoutes');
+const paymentRoutes = require('./PaymentRoutes');
 
 const router = Router();
 
@@ -33,5 +36,14 @@ router.use('/prestaciones', serviceRoutes);
 
 // Rutas de aranceles: /api/bussines/aranceles
 router.use('/aranceles', tariffRoutes);
+
+// Rutas de facturas: /api/bussines/facturas
+router.use('/facturas', invoiceRoutes);
+
+// Rutas de items de factura: /api/bussines/factura-items
+router.use('/factura-items', invoiceItemRoutes);
+
+// Rutas de pagos: /api/bussines/pagos
+router.use('/pagos', paymentRoutes);
 
 module.exports = router;
