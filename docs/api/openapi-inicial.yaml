@@ -2183,7 +2183,7 @@ paths:
           $ref: '#/components/responses/InternalServerError'
 
   # ==================== ASEGURADORAS ====================
-  /aseguradoras:
+  /bussines/aseguradoras:
     get:
       tags:
         - Aseguradoras
@@ -2233,7 +2233,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /planes:
+  /bussines/planes:
     get:
       tags:
         - Aseguradoras
@@ -2288,7 +2288,8 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /afiliaciones:
+  # ==================== AFILIACIONES ====================
+  /bussines/afiliaciones:
     get:
       tags:
         - Aseguradoras
@@ -2301,6 +2302,41 @@ paths:
           schema:
             type: integer
             format: int32
+        - name: planId
+          in: query
+          schema:
+            type: integer
+            format: int32
+        - name: numeroPoliza
+          in: query
+          schema:
+            type: string
+        - name: vigenteDesde
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: vigenteHasta
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: estado
+          in: query
+          schema:
+            type: boolean
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [numeroPoliza, vigenteDesde, vigenteHasta, createdAt]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
       responses:
         '200':
           description: Lista de afiliaciones
@@ -2340,11 +2376,226 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /bussines/afiliaciones/{id}:
+    get:
+      tags:
+        - Aseguradoras
+      summary: Obtener afiliación por ID
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Afiliación encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Afiliacion'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags:
+        - Aseguradoras
+      summary: Actualizar afiliación
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AfiliacionPatch'
+      responses:
+        '200':
+          description: Afiliación actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Afiliacion'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - Aseguradoras
+      summary: Eliminar afiliación (lógico)
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Afiliación eliminada exitosamente
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # ==================== AUTORIZACIONES ====================
+  /bussines/autorizaciones:
+    get:
+      tags:
+        - Prestaciones
+      summary: Listar autorizaciones
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: ordenId
+          in: query
+          schema:
+            type: integer
+            format: int32
+        - name: planId
+          in: query
+          schema:
+            type: integer
+            format: int32
+        - name: procedimientoCodigo
+          in: query
+          schema:
+            type: string
+        - name: estado
+          in: query
+          schema:
+            type: string
+            enum: [solicitada, aprobada, negada]
+        - name: fechaSolicitud
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: fechaRespuesta
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: numeroAutorizacion
+          in: query
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [numeroAutorizacion, fechaSolicitud, fechaRespuesta, estado, createdAt]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+      responses:
+        '200':
+          description: Lista de autorizaciones
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Autorizacion'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      tags:
+        - Prestaciones
+      summary: Crear autorización
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AutorizacionInput'
+      responses:
+        '201':
+          description: Autorización creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Autorizacion'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /bussines/autorizaciones/{id}:
+    get:
+      tags:
+        - Prestaciones
+      summary: Obtener autorización por ID
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Autorización encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Autorizacion'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags:
+        - Prestaciones
+      summary: Actualizar autorización
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AutorizacionPatch'
+      responses:
+        '200':
+          description: Autorización actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Autorizacion'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
         '500':
           $ref: '#/components/responses/InternalServerError'
 
   # ==================== PRESTACIONES ====================
-  /prestaciones:
+  /bussines/prestaciones:
     get:
       tags:
         - Prestaciones
@@ -2356,10 +2607,30 @@ paths:
           in: query
           schema:
             type: string
-        - name: categoria
+        - name: nombre
           in: query
           schema:
             type: string
+        - name: grupo
+          in: query
+          schema:
+            type: string
+        - name: requiereAutorizacion
+          in: query
+          schema:
+            type: boolean
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [codigo, nombre, grupo, createdAt]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
       responses:
         '200':
           description: Lista de prestaciones
@@ -2399,10 +2670,70 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /arancel:
+  /bussines/prestaciones/{codigo}:
+    get:
+      tags:
+        - Prestaciones
+      summary: Obtener prestación por código
+      parameters:
+        - name: codigo
+          in: path
+          required: true
+          description: Código de la prestación
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Prestación encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Prestacion'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags:
+        - Prestaciones
+      summary: Actualizar prestación
+      parameters:
+        - name: codigo
+          in: path
+          required: true
+          description: Código de la prestación
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PrestacionPatch'
+      responses:
+        '200':
+          description: Prestación actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Prestacion'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /bussines/arancel:
     get:
       tags:
         - Prestaciones
@@ -2410,9 +2741,9 @@ paths:
       parameters:
         - name: prestacionId
           in: query
+          description: Código de la prestación
           schema:
-            type: integer
-            format: int32
+            type: string
         - name: planId
           in: query
           schema:
@@ -2456,7 +2787,7 @@ paths:
           $ref: '#/components/responses/InternalServerError'
 
   # ==================== FACTURACIÓN ====================
-  /facturas:
+  /bussines/facturas:
     get:
       tags:
         - Facturación
@@ -2464,7 +2795,17 @@ paths:
       parameters:
         - $ref: '#/components/parameters/PageParam'
         - $ref: '#/components/parameters/LimitParam'
+        - name: numero
+          in: query
+          schema:
+            type: string
+          description: Número de factura
         - name: personaId
+          in: query
+          schema:
+            type: integer
+            format: int32
+        - name: aseguradoraId
           in: query
           schema:
             type: integer
@@ -2473,17 +2814,34 @@ paths:
           in: query
           schema:
             type: string
-            enum: [pendiente, pagada, parcial, anulada]
-        - name: fechaDesde
+            enum: [emitida, pagada, pendiente, anulada]
+        - name: moneda
           in: query
           schema:
             type: string
-            format: date
-        - name: fechaHasta
+            enum: [VES, USD, EUR]
+        - name: fechaEmisionDesde
           in: query
           schema:
             type: string
-            format: date
+            format: date-time
+        - name: fechaEmisionHasta
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [numero, fechaEmision, total, estado, createdAt]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
       responses:
         '200':
           description: Lista de facturas
@@ -2523,10 +2881,12 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /facturas/{id}:
+  /bussines/facturas/{id}:
     get:
       tags:
         - Facturación
@@ -2546,23 +2906,136 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
-  /facturas/{id}/items:
-    get:
+    patch:
       tags:
         - Facturación
-      summary: Listar items de factura
+      summary: Actualizar factura
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FacturaUpdate'
+      responses:
+        '200':
+          description: Factura actualizada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Factura'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /bussines/facturas/{id}/recalcular:
+    post:
+      tags:
+        - Facturación
+      summary: Recalcular totales de factura desde items
       parameters:
         - $ref: '#/components/parameters/IdParam'
       responses:
         '200':
-          description: Lista de items
+          description: Totales recalculados exitosamente
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/FacturaItem'
+                $ref: '#/components/schemas/Factura'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /bussines/factura-items:
+    get:
+      tags:
+        - Facturación
+      summary: Listar todos los items de factura
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LimitParam'
+        - name: facturaId
+          in: query
+          schema:
+            type: integer
+            format: int32
+        - name: prestacionCodigo
+          in: query
+          schema:
+            type: string
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [cantidad, valorUnitario, total, createdAt]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+      responses:
+        '200':
+          description: Lista de items de factura
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/PaginatedResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/FacturaItem'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /bussines/factura-items/factura/{invoiceId}:
+    get:
+      tags:
+        - Facturación
+      summary: Listar items de una factura específica
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Lista de items de la factura
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  codigo:
+                    type: integer
+                    format: int32
+                  mensaje:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FacturaItem'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
@@ -2572,9 +3045,14 @@ paths:
     post:
       tags:
         - Facturación
-      summary: Agregar item a factura
+      summary: Crear item de factura
       parameters:
-        - $ref: '#/components/parameters/IdParam'
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
       requestBody:
         required: true
         content:
@@ -2583,7 +3061,7 @@ paths:
               $ref: '#/components/schemas/FacturaItemInput'
       responses:
         '201':
-          description: Item agregado exitosamente
+          description: Item creado exitosamente
           content:
             application/json:
               schema:
@@ -2597,32 +3075,30 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /facturas/{id}/pagos:
+  /bussines/factura-items/{id}:
     get:
       tags:
         - Facturación
-      summary: Listar pagos de factura
+      summary: Obtener item de factura por ID
       parameters:
         - $ref: '#/components/parameters/IdParam'
       responses:
         '200':
-          description: Lista de pagos
+          description: Item encontrado
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pago'
+                $ref: '#/components/schemas/FacturaItem'
         '401':
           $ref: '#/components/responses/Unauthorized'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-    post:
+    patch:
       tags:
         - Facturación
-      summary: Registrar pago de factura
+      summary: Actualizar item de factura
       parameters:
         - $ref: '#/components/parameters/IdParam'
       requestBody:
@@ -2630,14 +3106,31 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PagoInput'
+              $ref: '#/components/schemas/FacturaItemUpdate'
       responses:
-        '201':
-          description: Pago registrado exitosamente
+        '200':
+          description: Item actualizado exitosamente
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Pago'
+                $ref: '#/components/schemas/FacturaItem'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - Facturación
+      summary: Eliminar item de factura
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Item eliminado exitosamente
         '400':
           $ref: '#/components/responses/BadRequest'
         '401':
@@ -2647,10 +3140,10 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /pagos:
+  /bussines/pagos:
     get:
       tags:
-        - Pagos
+        - Facturación
       summary: Listar pagos
       parameters:
         - $ref: '#/components/parameters/PageParam'
@@ -2660,11 +3153,38 @@ paths:
           schema:
             type: integer
             format: int32
+        - name: estado
+          in: query
+          schema:
+            type: string
+            enum: [pendiente, completado, cancelado, rechazado]
         - name: medio
           in: query
           schema:
             type: string
             enum: [efectivo, tarjeta, transferencia]
+        - name: fechaDesde
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: fechaHasta
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [fecha, monto, estado, createdAt]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
       responses:
         '200':
           description: Lista de pagos
@@ -2685,8 +3205,8 @@ paths:
           $ref: '#/components/responses/InternalServerError'
     post:
       tags:
-        - Pagos
-      summary: Registrar pago
+        - Facturación
+      summary: Crear pago
       requestBody:
         required: true
         content:
@@ -2695,7 +3215,7 @@ paths:
               $ref: '#/components/schemas/PagoInput'
       responses:
         '201':
-          description: Pago registrado exitosamente
+          description: Pago creado exitosamente
           content:
             application/json:
               schema:
@@ -2704,8 +3224,135 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
+
+  /bussines/pagos/factura/{invoiceId}:
+    get:
+      tags:
+        - Facturación
+      summary: Listar pagos de una factura
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Lista de pagos de la factura con saldo pendiente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  codigo:
+                    type: integer
+                    format: int32
+                  mensaje:
+                    type: string
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Pago'
+                  saldoPendiente:
+                    type: number
+                    format: float
+                    description: Saldo pendiente de la factura
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /bussines/pagos/factura/{invoiceId}/saldo:
+    get:
+      tags:
+        - Facturación
+      summary: Obtener saldo pendiente de una factura
+      parameters:
+        - name: invoiceId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int32
+      responses:
+        '200':
+          description: Saldo pendiente obtenido exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  codigo:
+                    type: integer
+                    format: int32
+                  mensaje:
+                    type: string
+                  saldoPendiente:
+                    type: number
+                    format: float
+                    description: Saldo pendiente = Total factura - Suma de pagos completados
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /bussines/pagos/{id}:
+    get:
+      tags:
+        - Facturación
+      summary: Obtener pago por ID
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Pago encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pago'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    patch:
+      tags:
+        - Facturación
+      summary: Actualizar pago
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PagoUpdate'
+      responses:
+        '200':
+          description: Pago actualizado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pago'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
 
 
   # ==================== NOTIFICACIONES ====================
@@ -3887,17 +4534,47 @@ components:
         planId:
           type: integer
           format: int32
-        numeroAfiliado:
+        numeroPoliza:
           type: string
-        fechaInicio:
+        vigenteDesde:
           type: string
-          format: date
-        fechaFin:
+          format: date-time
+        vigenteHasta:
           type: string
-          format: date
-        activo:
+          format: date-time
+          nullable: true
+        copago:
+          type: number
+          format: float
+        cuotaModeradora:
+          type: number
+          format: float
+        estado:
           type: boolean
+        persona:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int32
+            nombres:
+              type: string
+            apellidos:
+              type: string
+        plan:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int32
+            nombre:
+              type: string
+            codigo:
+              type: string
         createdAt:
+          type: string
+          format: date-time
+        updatedAt:
           type: string
           format: date-time
 
@@ -3906,8 +4583,8 @@ components:
       required:
         - personaId
         - planId
-        - numeroAfiliado
-        - fechaInicio
+        - numeroPoliza
+        - vigenteDesde
       properties:
         personaId:
           type: integer
@@ -3915,33 +4592,70 @@ components:
         planId:
           type: integer
           format: int32
-        numeroAfiliado:
+        numeroPoliza:
           type: string
-        fechaInicio:
+        vigenteDesde:
           type: string
-          format: date
-        fechaFin:
+          format: date-time
+        vigenteHasta:
           type: string
-          format: date
+          format: date-time
+        copago:
+          type: number
+          format: float
+        cuotaModeradora:
+          type: number
+          format: float
+        estado:
+          type: boolean
+
+    AfiliacionPatch:
+      type: object
+      properties:
+        personaId:
+          type: integer
+          format: int32
+        planId:
+          type: integer
+          format: int32
+        numeroPoliza:
+          type: string
+        vigenteDesde:
+          type: string
+          format: date-time
+        vigenteHasta:
+          type: string
+          format: date-time
+        copago:
+          type: number
+          format: float
+        cuotaModeradora:
+          type: number
+          format: float
+        estado:
+          type: boolean
 
     # ========== PRESTACIONES ==========
     Prestacion:
       type: object
       properties:
-        id:
-          type: integer
-          format: int32
         codigo:
           type: string
+          description: Código único de la prestación (clave primaria)
         nombre:
           type: string
-        descripcion:
+        grupo:
           type: string
-        categoria:
+        requisitos:
           type: string
-        activo:
+        tiempoEstimado:
+          type: string
+        requiereAutorizacion:
           type: boolean
         createdAt:
+          type: string
+          format: date-time
+        updatedAt:
           type: string
           format: date-time
 
@@ -3950,16 +4664,44 @@ components:
       required:
         - codigo
         - nombre
-        - categoria
       properties:
         codigo:
           type: string
+          description: Código único de la prestación (máximo 50 caracteres)
         nombre:
           type: string
-        descripcion:
+          description: Nombre de la prestación (máximo 200 caracteres)
+        grupo:
           type: string
-        categoria:
+          description: Grupo al que pertenece la prestación (máximo 100 caracteres)
+        requisitos:
           type: string
+          description: Requisitos para la prestación (máximo 500 caracteres)
+        tiempoEstimado:
+          type: string
+          description: Tiempo estimado de la prestación (máximo 50 caracteres)
+        requiereAutorizacion:
+          type: boolean
+          description: Indica si la prestación requiere autorización previa (default: false)
+
+    PrestacionPatch:
+      type: object
+      properties:
+        nombre:
+          type: string
+          description: Nombre de la prestación (máximo 200 caracteres)
+        grupo:
+          type: string
+          description: Grupo al que pertenece la prestación (máximo 100 caracteres)
+        requisitos:
+          type: string
+          description: Requisitos para la prestación (máximo 500 caracteres)
+        tiempoEstimado:
+          type: string
+          description: Tiempo estimado de la prestación (máximo 50 caracteres)
+        requiereAutorizacion:
+          type: boolean
+          description: Indica si la prestación requiere autorización previa
 
     Arancel:
       type: object
@@ -3968,8 +4710,8 @@ components:
           type: integer
           format: int32
         prestacionId:
-          type: integer
-          format: int32
+          type: string
+          description: Código de la prestación
         planId:
           type: integer
           format: int32
@@ -3985,9 +4727,129 @@ components:
         vigenciaHasta:
           type: string
           format: date
+          nullable: true
         createdAt:
           type: string
           format: date-time
+
+    # ========== AUTORIZACIONES ==========
+    Autorizacion:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+        ordenId:
+          type: integer
+          format: int32
+        planId:
+          type: integer
+          format: int32
+        procedimientoCodigo:
+          type: string
+        estado:
+          type: string
+          enum: [solicitada, aprobada, negada]
+        fechaSolicitud:
+          type: string
+          format: date-time
+          nullable: true
+        fechaRespuesta:
+          type: string
+          format: date-time
+          nullable: true
+        numeroAutorizacion:
+          type: string
+          nullable: true
+          description: Número único de autorización (solo cuando está aprobada)
+        observaciones:
+          type: string
+        orden:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int32
+            tipo:
+              type: string
+            estado:
+              type: string
+        plan:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int32
+            nombre:
+              type: string
+            codigo:
+              type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AutorizacionInput:
+      type: object
+      required:
+        - ordenId
+        - planId
+      properties:
+        ordenId:
+          type: integer
+          format: int32
+        planId:
+          type: integer
+          format: int32
+        procedimientoCodigo:
+          type: string
+          description: Código del procedimiento (máximo 100 caracteres)
+        estado:
+          type: string
+          enum: [solicitada, aprobada, negada]
+          default: solicitada
+        fechaSolicitud:
+          type: string
+          format: date-time
+        fechaRespuesta:
+          type: string
+          format: date-time
+        numeroAutorizacion:
+          type: string
+          description: Número único de autorización (máximo 100 caracteres, debe ser único)
+        observaciones:
+          type: string
+          description: Observaciones (máximo 1000 caracteres)
+
+    AutorizacionPatch:
+      type: object
+      properties:
+        ordenId:
+          type: integer
+          format: int32
+        planId:
+          type: integer
+          format: int32
+        procedimientoCodigo:
+          type: string
+          description: Código del procedimiento (máximo 100 caracteres)
+        estado:
+          type: string
+          enum: [solicitada, aprobada, negada]
+        fechaSolicitud:
+          type: string
+          format: date-time
+        fechaRespuesta:
+          type: string
+          format: date-time
+        numeroAutorizacion:
+          type: string
+          description: Número único de autorización (máximo 100 caracteres, debe ser único)
+        observaciones:
+          type: string
+          description: Observaciones (máximo 1000 caracteres)
 
     ArancelInput:
       type: object
@@ -3998,8 +4860,8 @@ components:
         - vigenciaDesde
       properties:
         prestacionId:
-          type: integer
-          format: int32
+          type: string
+          description: Código de la prestación
         planId:
           type: integer
           format: int32
@@ -4025,13 +4887,20 @@ components:
           format: int32
         numero:
           type: string
+          description: Número único de factura
+        fechaEmision:
+          type: string
+          format: date-time
         personaId:
           type: integer
           format: int32
-        fecha:
+        aseguradoraId:
+          type: integer
+          format: int32
+        moneda:
           type: string
-          format: date
-        subtotal:
+          enum: [VES, USD, EUR]
+        subTotal:
           type: number
           format: float
         impuestos:
@@ -4040,12 +4909,39 @@ components:
         total:
           type: number
           format: float
-        saldo:
-          type: number
-          format: float
         estado:
           type: string
-          enum: [pendiente, pagada, parcial, anulada]
+          enum: [emitida, pagada, pendiente, anulada]
+        persona:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int32
+            nombres:
+              type: string
+            apellidos:
+              type: string
+            documento:
+              type: string
+        aseguradora:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int32
+            nombre:
+              type: string
+            nit:
+              type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/FacturaItem'
+        pagos:
+          type: array
+          items:
+            $ref: '#/components/schemas/Pago'
         createdAt:
           type: string
           format: date-time
@@ -4056,15 +4952,67 @@ components:
     FacturaInput:
       type: object
       required:
+        - numero
         - personaId
-        - fecha
+        - aseguradoraId
+        - items
       properties:
+        numero:
+          type: string
+          description: Número único de factura (máximo 50 caracteres)
         personaId:
           type: integer
           format: int32
-        fecha:
+        aseguradoraId:
+          type: integer
+          format: int32
+        moneda:
           type: string
-          format: date
+          enum: [VES, USD, EUR]
+          default: VES
+        estado:
+          type: string
+          enum: [emitida, pagada, pendiente, anulada]
+          default: emitida
+        fechaEmision:
+          type: string
+          format: date-time
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/FacturaItemInput'
+          description: Items de la factura (requeridos para crear factura)
+
+    FacturaUpdate:
+      type: object
+      properties:
+        numero:
+          type: string
+        personaId:
+          type: integer
+          format: int32
+        aseguradoraId:
+          type: integer
+          format: int32
+        moneda:
+          type: string
+          enum: [VES, USD, EUR]
+        estado:
+          type: string
+          enum: [emitida, pagada, pendiente, anulada]
+        fechaEmision:
+          type: string
+          format: date-time
+        subTotal:
+          type: number
+          format: float
+        impuestos:
+          type: number
+          format: float
+        total:
+          type: number
+          format: float
 
     FacturaItem:
       type: object
@@ -4075,41 +5023,83 @@ components:
         facturaId:
           type: integer
           format: int32
-        prestacionId:
-          type: integer
-          format: int32
+        prestacionCodigo:
+          type: string
+          description: Código de la prestación
         descripcion:
           type: string
         cantidad:
           type: integer
-        precioUnitario:
+        valorUnitario:
           type: number
           format: float
-        subtotal:
+        impuestos:
           type: number
           format: float
+        total:
+          type: number
+          format: float
+          description: Total del item = (cantidad × valorUnitario) + impuestos
+        prestacion:
+          type: object
+          properties:
+            codigo:
+              type: string
+            nombre:
+              type: string
+            grupo:
+              type: string
         createdAt:
+          type: string
+          format: date-time
+        updatedAt:
           type: string
           format: date-time
 
     FacturaItemInput:
       type: object
       required:
-        - prestacionId
-        - descripcion
+        - prestacionCodigo
         - cantidad
-        - precioUnitario
+        - valorUnitario
       properties:
-        prestacionId:
+        prestacionCodigo:
+          type: string
+          description: Código de la prestación (máximo 50 caracteres)
+        descripcion:
+          type: string
+          description: Descripción del item (máximo 500 caracteres)
+        cantidad:
           type: integer
-          format: int32
+          minimum: 1
+        valorUnitario:
+          type: number
+          format: float
+          minimum: 0.01
+        impuestos:
+          type: number
+          format: float
+          minimum: 0
+          default: 0
+
+    FacturaItemUpdate:
+      type: object
+      properties:
+        prestacionCodigo:
+          type: string
         descripcion:
           type: string
         cantidad:
           type: integer
-        precioUnitario:
+          minimum: 1
+        valorUnitario:
           type: number
           format: float
+          minimum: 0.01
+        impuestos:
+          type: number
+          format: float
+          minimum: 0
 
     Pago:
       type: object
@@ -4120,36 +5110,88 @@ components:
         facturaId:
           type: integer
           format: int32
-        monto:
-          type: number
-          format: float
-        metodoPago:
-          type: string
-          enum: [efectivo, tarjeta, transferencia, cheque]
-        referencia:
-          type: string
         fecha:
           type: string
           format: date-time
+        monto:
+          type: number
+          format: float
+        medio:
+          type: string
+          enum: [efectivo, tarjeta, transferencia]
+        referencia:
+          type: string
+          nullable: true
+        estado:
+          type: string
+          enum: [pendiente, completado, cancelado, rechazado]
+        factura:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int32
+            numero:
+              type: string
+            total:
+              type: number
+              format: float
+            estado:
+              type: string
         createdAt:
+          type: string
+          format: date-time
+        updatedAt:
           type: string
           format: date-time
 
     PagoInput:
       type: object
       required:
+        - facturaId
         - monto
-        - metodoPago
-        - fecha
+        - medio
       properties:
+        facturaId:
+          type: integer
+          format: int32
         monto:
           type: number
           format: float
-        metodoPago:
+          minimum: 0.01
+          description: El monto no puede exceder el saldo pendiente de la factura
+        medio:
           type: string
-          enum: [efectivo, tarjeta, transferencia, cheque]
+          enum: [efectivo, tarjeta, transferencia]
         referencia:
           type: string
+          description: Referencia del pago (máximo 200 caracteres)
+        estado:
+          type: string
+          enum: [pendiente, completado, cancelado, rechazado]
+          default: pendiente
+        fecha:
+          type: string
+          format: date-time
+
+    PagoUpdate:
+      type: object
+      properties:
+        facturaId:
+          type: integer
+          format: int32
+        monto:
+          type: number
+          format: float
+          minimum: 0.01
+        medio:
+          type: string
+          enum: [efectivo, tarjeta, transferencia]
+        referencia:
+          type: string
+        estado:
+          type: string
+          enum: [pendiente, completado, cancelado, rechazado]
         fecha:
           type: string
           format: date-time

@@ -12,7 +12,18 @@ module.exports = (sequelize, DataTypes) => {
         as: 'aseguradora'
       });
       
-      // Futuras asociaciones con Afiliacion, etc.
+      Plan.hasMany(models.Affiliation, {
+        foreignKey: 'planId',
+        as: 'affiliations'
+      });
+      Plan.hasMany(models.Authorization, {
+        foreignKey: 'planId',
+        as: 'authorizations'
+      });
+      Plan.hasMany(models.Tariff, {
+        foreignKey: 'planId',
+        as: 'tariffs'
+      });
     }
   }
   

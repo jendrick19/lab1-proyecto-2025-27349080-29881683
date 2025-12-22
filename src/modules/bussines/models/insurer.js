@@ -11,8 +11,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'aseguradoraId',
         as: 'planes'
       });
-      
-      // Futuras asociaciones con Afiliacion, etc.
+      Insurer.hasMany(models.Invoice, {
+        foreignKey: 'insurerId',
+        as: 'invoices'
+      });
     }
   }
   

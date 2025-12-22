@@ -18,6 +18,14 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'peopleId',
         as: 'consents'
       });
+      PeopleAttended.hasMany(models.Affiliation, {
+        foreignKey: 'peopleId',
+        as: 'affiliations'
+      });
+      PeopleAttended.hasMany(models.Invoice, {
+        foreignKey: 'peopleId',
+        as: 'invoices'
+      });
     }
   }
   PeopleAttended.init({
