@@ -3360,22 +3360,64 @@ paths:
     get:
       tags:
         - Notificaciones
-      summary: Obtener logs de notificaciones
+      summary: Listar notificaciones
+      description: Obtiene el historial de notificaciones con filtros y paginación
       parameters:
         - $ref: '#/components/parameters/PageParam'
         - $ref: '#/components/parameters/LimitParam'
+        - name: sortBy
+          in: query
+          description: Campo por el cual ordenar
+          schema:
+            type: string
+            enum: [fecha, estado, tipo]
+            default: fecha
+        - name: sortOrder
+          in: query
+          description: Orden de clasificación
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+        - name: pacienteId
+          in: query
+          description: Filtrar por ID de paciente
+          schema:
+            type: integer
+            format: int32
+        - name: citaId
+          in: query
+          description: Filtrar por ID de cita
+          schema:
+            type: integer
+            format: int32
         - name: tipo
           in: query
+          description: Filtrar por tipo de notificación
           schema:
             type: string
             enum: [email, sms, push]
         - name: estado
           in: query
+          description: Filtrar por estado
           schema:
             type: string
-            enum: [enviada, fallida, pendiente]
+            enum: [pendiente, enviado, error, reintentado]
+        - name: plantilla
+          in: query
+          description: Filtrar por plantilla
+          schema:
+            type: string
+            enum: [cita_confirmacion, cita_recordatorio, resultado_disponible, factura_emitida]
         - name: fechaDesde
           in: query
+          description: Filtrar desde fecha
+          schema:
+            type: string
+            format: date-time
+        - name: fechaHasta
+          in: query
+          description: Filtrar hasta fecha
           schema:
             type: string
             format: date-time
@@ -3400,8 +3442,8 @@ paths:
     post:
       tags:
         - Notificaciones
-      summary: Enviar notificación
-      description: Endpoint idempotente para envío de notificaciones
+      summary: Crear y enviar notificación
+      description: Crea una notificación e intenta enviarla inmediatamente
       requestBody:
         required: true
         content:
@@ -3410,13 +3452,13 @@ paths:
               $ref: '#/components/schemas/NotificacionInput'
       responses:
         '201':
-          description: Notificación enviada exitosamente
+          description: Notificación creada y enviada exitosamente
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Notificacion'
         '202':
-          description: Notificación en cola para envío
+          description: Notificación creada y en cola para envío
           content:
             application/json:
               schema:
@@ -3425,6 +3467,137 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /notificaciones/estadisticas:
+    get:
+      tags:
+        - Notificaciones
+      summary: Obtener estadísticas de notificaciones
+      description: Retorna estadísticas de envío de notificaciones
+      parameters:
+        - name: tipo
+          in: query
+          description: Filtrar por tipo de notificación
+          schema:
+            type: string
+            enum: [email, sms, push]
+        - name: fechaDesde
+          in: query
+          description: Filtrar desde fecha
+          schema:
+            type: string
+            format: date-time
+        - name: fechaHasta
+          in: query
+          description: Filtrar hasta fecha
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Estadísticas de notificaciones
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificacionEstadisticas'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /notificaciones/procesar-reintentos:
+    post:
+      tags:
+        - Notificaciones
+      summary: Procesar cola de reintentos
+      description: Procesa manualmente las notificaciones fallidas pendientes de reintento
+      responses:
+        '200':
+          description: Cola procesada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Cola de reintentos procesada
+                  notificacionesProcesadas:
+                    type: integer
+                    example: 5
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /notificaciones/{id}:
+    get:
+      tags:
+        - Notificaciones
+      summary: Obtener notificación por ID
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Notificación encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notificacion'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /notificaciones/{id}/enviar:
+    post:
+      tags:
+        - Notificaciones
+      summary: Enviar notificación específica
+      description: Intenta enviar una notificación pendiente
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Notificación enviada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notificacion'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /notificaciones/{id}/reenviar:
+    post:
+      tags:
+        - Notificaciones
+      summary: Reenviar notificación fallida
+      description: Reintenta enviar una notificación que falló previamente
+      parameters:
+        - $ref: '#/components/parameters/IdParam'
+      responses:
+        '200':
+          description: Notificación reenviada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notificacion'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
 
@@ -5203,49 +5376,136 @@ components:
         id:
           type: integer
           format: int32
-        personaId:
+          example: 1
+        paciente:
+          type: object
+          properties:
+            id:
+              type: integer
+              format: int32
+            nombres:
+              type: string
+            apellidos:
+              type: string
+            email:
+              type: string
+              format: email
+        cita:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: integer
+              format: int32
+            inicio:
+              type: string
+              format: date-time
+            estado:
+              type: string
+        resultado:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: integer
+              format: int32
+            tipo:
+              type: string
+        factura:
+          type: object
+          nullable: true
+          properties:
+            id:
+              type: integer
+              format: int32
+            numero:
+              type: string
+            total:
+              type: number
+              format: float
+        tipo:
           type: string
-        citaId:
-          type: integer
-        resultadoId:
-          type: integer
-        facturaId:
-          type: integer
+          enum: [email, sms, push]
+          example: email
         destinatario:
           type: string
+          example: paciente@example.com
         plantilla:
           type: string
-        payload:
+          enum: [cita_confirmacion, cita_recordatorio, resultado_disponible, factura_emitida]
+          example: cita_confirmacion
+        asunto:
           type: string
+          example: Confirmación de su cita médica
         estado:
           type: string
-          enum: [Enviado, Error, Reintentado]
+          enum: [pendiente, enviado, error, reintentado]
+          example: enviado
         intentos:
           type: integer
-        timestamp:
+          example: 1
+        mensajeError:
+          type: string
+          nullable: true
+        metadatos:
+          type: object
+          nullable: true
+        fechaCreacion:
           type: string
           format: date-time
+        fechaEnvio:
+          type: string
+          format: date-time
+          nullable: true
+        proximoIntento:
+          type: string
+          format: date-time
+          nullable: true
 
     NotificacionInput:
       type: object
       required:
-        - personaId
         - destinatario
         - plantilla
-        - payload
+        - datos
       properties:
-        personaId:
+        tipo:
           type: string
+          enum: [email, sms, push]
+          default: email
+          example: email
         destinatario:
           type: string
+          description: Email o teléfono según el tipo
+          example: paciente@example.com
         plantilla:
           type: string
-        payload:
+          enum: [cita_confirmacion, cita_recordatorio, resultado_disponible, factura_emitida]
+          example: cita_confirmacion
+        asunto:
           type: string
+          description: Asunto del correo (opcional, se usa el de la plantilla si no se especifica)
+          example: Confirmación de su cita médica
+        datos:
+          type: object
+          description: Datos para la plantilla
+          example:
+            nombrePaciente: Juan Pérez
+            nombreProfesional: Dr. García
+            fecha: 2024-01-15
+            hora: 10:00 AM
+            unidad: Consulta Externa
+            modalidad: Presencial
+        pacienteId:
+          type: integer
+          format: int32
+          description: ID del paciente (al menos uno de pacienteId, citaId, resultadoId o facturaId es requerido)
+          example: 1
         citaId:
           type: integer
           format: int32
           nullable: true
+          example: 123
         resultadoId:
           type: integer
           format: int32
@@ -5254,28 +5514,30 @@ components:
           type: integer
           format: int32
           nullable: true
-      oneOf:
-        - required:
-            - citaId
-          properties:
-            citaId:
-              type: string
-              format: int32
-          not:
-            required:
-              - resultadoId
-              - facturaId
-            properties:
-              resultadoId:
-                type: integer
-                nullable: true
-                enum: [null]
-              facturaId:
-                type: integer
-                nullable: true
-                enum: [null]
-        - required:
-            - resultadoId
+
+    NotificacionEstadisticas:
+      type: object
+      properties:
+        total:
+          type: integer
+          description: Total de notificaciones
+          example: 1000
+        sent:
+          type: integer
+          description: Notificaciones enviadas exitosamente
+          example: 950
+        pending:
+          type: integer
+          description: Notificaciones pendientes
+          example: 30
+        error:
+          type: integer
+          description: Notificaciones con error
+          example: 20
+        successRate:
+          type: string
+          description: Tasa de éxito en porcentaje
+          example: "95.00"
           properties:
             resultadoId:
               type: string
