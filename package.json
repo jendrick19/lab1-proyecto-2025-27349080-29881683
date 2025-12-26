@@ -9,7 +9,11 @@
     "seed": "node scripts/run-seeder.js",
     "seed:undo": "node scripts/clear-seeder.js",
     "seed:cli": "npx sequelize-cli db:seed:all",
-    "seed:cli:undo": "npx sequelize-cli db:seed:undo:all"
+    "seed:cli:undo": "npx sequelize-cli db:seed:undo:all",
+    "seed:notifications": "npx sequelize-cli db:seed --seed 20251227000000-demo-notifications.js",
+    "seed:notifications:undo": "npx sequelize-cli db:seed:undo --seed 20251227000000-demo-notifications.js",
+    "test:mailtrap": "node scripts/test-mailtrap.js",
+    "send:email": "node scripts/send-test-email.js"
   },
   "keywords": [
     "node",
@@ -23,6 +27,7 @@
     "express": "^5.1.0",
     "express-validator": "^7.3.0",
     "mysql2": "^3.15.3",
+    "nodemailer": "^7.0.12",
     "sequelize": "^6.37.7"
   },
   "devDependencies": {
