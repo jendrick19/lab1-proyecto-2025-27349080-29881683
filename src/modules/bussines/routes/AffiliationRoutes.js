@@ -1,4 +1,6 @@
 const { Router } = require('express');
+const { authenticate } = require('../../../shared/middlewares/authMiddleware');
+const { hasAnyRole } = require('../../../shared/middlewares/authorizationMiddleware');
 
 const {
   listHandler,
@@ -17,11 +19,17 @@ const {
 
 const router = Router();
 
+// Todas las rutas requieren autenticación
+router.use(authenticate);
+
+// Listar y obtener afiliaciones - Todos los autenticados pueden leer
 router.get('/', validateList, listHandler);
-router.post('/', validateCreate, createHandler);
 router.get('/:id', validateId, getHandler);
-router.patch('/:id', validateUpdate, updateHandler);
-router.delete('/:id', validateId, deleteHandler);
+
+// Gestión de afiliaciones - Administradores y cajeros
+router.post('/', hasAnyRole(['administrador', 'cajero']), validateCreate, createHandler);
+router.patch('/:id', hasAnyRole(['administrador', 'cajero']), validateUpdate, updateHandler);
+router.delete('/:id', hasAnyRole(['administrador', 'cajero']), validateId, deleteHandler);
 
 module.exports = router;
 

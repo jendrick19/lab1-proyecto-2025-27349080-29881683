@@ -1,4 +1,6 @@
 const { Router } = require('express');
+const { authenticate } = require('../../../shared/middlewares/authMiddleware');
+const { hasPermission } = require('../../../shared/middlewares/authorizationMiddleware');
 
 const {
   listHandler,
@@ -16,10 +18,18 @@ const {
 
 const router = Router();
 
-router.get('/', validateList, listHandler);
-router.post('/', validateCreate, createHandler);
-router.get('/:id', validateId, getHandler);
-router.patch('/:id', validateUpdate, updateHandler);
+// Todas las rutas requieren autenticación
+router.use(authenticate);
+
+// Listar y obtener autorizaciones - Todos pueden leer
+router.get('/', hasPermission('authorizations.read'), validateList, listHandler);
+router.get('/:id', hasPermission('authorizations.read'), validateId, getHandler);
+
+// Crear autorizaciones - Cajeros y administradores
+router.post('/', hasPermission('authorizations.create'), validateCreate, createHandler);
+
+// Actualizar autorizaciones - Cajeros y administradores
+router.patch('/:id', hasPermission('authorizations.update'), validateUpdate, updateHandler);
 
 module.exports = router;
 

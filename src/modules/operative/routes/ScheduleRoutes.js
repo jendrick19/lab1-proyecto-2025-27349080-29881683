@@ -1,4 +1,6 @@
 const { Router } = require('express');
+const { authenticate } = require('../../../shared/middlewares/authMiddleware');
+const { hasPermission } = require('../../../shared/middlewares/authorizationMiddleware');
 
 const {
     listHandler,
@@ -17,10 +19,20 @@ const {
 
 const router = Router();
 
-router.get('/', validateList, listHandler);
-router.post('/', validateCreate, createHandler);
-router.get('/:id', validateId, getHandler);
-router.patch('/:id', validateUpdate, updateHandler);
-router.delete('/:id', validateId, deleteHandler);
+// Todas las rutas requieren autenticación
+router.use(authenticate);
+
+// Listar y obtener horarios - Todos pueden leer
+router.get('/', hasPermission('schedules.read'), validateList, listHandler);
+router.get('/:id', hasPermission('schedules.read'), validateId, getHandler);
+
+// Crear horarios - Solo administradores
+router.post('/', hasPermission('schedules.create'), validateCreate, createHandler);
+
+// Actualizar horarios - Solo administradores
+router.patch('/:id', hasPermission('schedules.update'), validateUpdate, updateHandler);
+
+// Eliminar horarios - Solo administradores
+router.delete('/:id', hasPermission('schedules.delete'), validateId, deleteHandler);
 
 module.exports = router;

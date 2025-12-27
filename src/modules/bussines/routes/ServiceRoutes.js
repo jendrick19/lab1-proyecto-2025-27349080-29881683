@@ -1,4 +1,6 @@
 const { Router } = require('express');
+const { authenticate } = require('../../../shared/middlewares/authMiddleware');
+const { isAdmin } = require('../../../shared/middlewares/authorizationMiddleware');
 
 const {
   listHandler,
@@ -16,10 +18,16 @@ const {
 
 const router = Router();
 
+// Todas las rutas requieren autenticación
+router.use(authenticate);
+
+// Listar y obtener servicios - Todos los autenticados pueden leer
 router.get('/', validateList, listHandler);
-router.post('/', validateCreate, createHandler);
 router.get('/:codigo', validateCode, getHandler);
-router.patch('/:codigo', validateUpdate, updateHandler);
+
+// Gestión de servicios - Solo administradores
+router.post('/', isAdmin, validateCreate, createHandler);
+router.patch('/:codigo', isAdmin, validateUpdate, updateHandler);
 
 module.exports = router;
 

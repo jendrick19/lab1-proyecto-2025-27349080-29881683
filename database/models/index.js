@@ -32,6 +32,11 @@ const modelFactories = [
   require('../../src/modules/clinic/models/resultversion'),
   require('../../src/modules/platform/models/user'),
   require('../../src/modules/platform/models/notification'),
+  require('../../src/modules/platform/models/accesslog'),
+  require('../../src/modules/platform/models/role'),
+  require('../../src/modules/platform/models/permission'),
+  require('../../src/modules/platform/models/userrole'),
+  require('../../src/modules/platform/models/rolepermission'),
   require('../../src/modules/bussines/models/insurer'),
   require('../../src/modules/bussines/models/plan'),
   require('../../src/modules/bussines/models/affiliation'),
@@ -79,6 +84,11 @@ db.modules = {
   platform: {
     User: db.User,
     Notification: db.Notification,
+    AccessLog: db.AccessLog,
+    Role: db.Role,
+    Permission: db.Permission,
+    UserRole: db.UserRole,
+    RolePermission: db.RolePermission,
   },
   bussines: {
     Insurer: db.Insurer,

@@ -1,4 +1,6 @@
 const { Router } = require('express');
+const { authenticate } = require('../../../shared/middlewares/authMiddleware');
+const { isAdmin } = require('../../../shared/middlewares/authorizationMiddleware');
 
 const {
   listHandler,
@@ -18,11 +20,17 @@ const {
 
 const router = Router();
 
+// Todas las rutas requieren autenticación
+router.use(authenticate);
+
+// Listar y obtener tarifas - Todos los autenticados pueden leer
 router.get('/', validateList, listHandler);
-router.post('/', validateCreate, createHandler);
 router.get('/activa/:prestacionCodigo', validateActiveTariff, getActiveHandler);
 router.get('/:id', validateId, getHandler);
-router.patch('/:id', validateUpdate, updateHandler);
+
+// Gestión de tarifas - Solo administradores
+router.post('/', isAdmin, validateCreate, createHandler);
+router.patch('/:id', isAdmin, validateUpdate, updateHandler);
 
 module.exports = router;
 
