@@ -34,8 +34,14 @@ const buildWhere = ({ ordenId, planId, procedimientoCodigo, estado, fechaSolicit
       [Op.like]: `%${numeroAutorizacion}%`,
     };
   }
-  addDateRangeToWhere(where, 'requestDate', fechaSolicitud, fechaRespuesta);
-  addDateRangeToWhere(where, 'responseDate', fechaSolicitud, fechaRespuesta);
+  // Aplicar fechaSolicitud únicamente a requestDate (fecha de solicitud)
+  if (fechaSolicitud) {
+    addDateRangeToWhere(where, 'requestDate', fechaSolicitud, null);
+  }
+  // Aplicar fechaRespuesta únicamente a responseDate (fecha de respuesta)
+  if (fechaRespuesta) {
+    addDateRangeToWhere(where, 'responseDate', null, fechaRespuesta);
+  }
   return where;
 };
 

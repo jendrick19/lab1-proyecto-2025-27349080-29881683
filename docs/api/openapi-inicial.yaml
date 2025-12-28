@@ -2313,11 +2313,13 @@ paths:
             type: string
         - name: vigenteDesde
           in: query
+          description: Filtrar por fecha de inicio de vigencia (`effectiveFrom`). Formato `YYYY-MM-DD`. Devuelve afiliaciones cuyo `effectiveFrom` es mayor o igual a la fecha indicada.
           schema:
             type: string
             format: date
         - name: vigenteHasta
           in: query
+          description: Filtrar por fecha de fin de vigencia (`effectiveTo`). Formato `YYYY-MM-DD`. Incluye todo el día indicado (se compara como `effectiveTo <= fecha` a nivel de consulta).
           schema:
             type: string
             format: date
