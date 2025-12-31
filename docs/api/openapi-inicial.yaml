@@ -1568,9 +1568,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  versionAnterior:
+                  version1:
                     $ref: '#/components/schemas/Nota'
-                  versionNueva:
+                  version2:
                     $ref: '#/components/schemas/Nota'
                   cambios:
                     type: object

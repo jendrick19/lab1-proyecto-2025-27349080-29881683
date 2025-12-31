@@ -206,7 +206,7 @@ const getLatestVersionHandler = async (req, res, next) => {
       codigo: 200,
       mensaje: 'Última versión obtenida exitosamente',
       data: {
-        nota: mapModelToResponse(result.note),
+        notaId: result.noteId,
         version: mapVersionToResponse(result.version),
       },
     });
@@ -230,7 +230,7 @@ const compareVersionsHandler = async (req, res, next) => {
       codigo: 200,
       mensaje: 'Comparación de versiones realizada exitosamente',
       data: {
-        nota: mapModelToResponse(comparison.note),
+        noteId: comparison.noteId,
         version1: mapVersionToResponse(comparison.version1),
         version2: mapVersionToResponse(comparison.version2),
         cambios: comparison.changes,
