@@ -177,6 +177,8 @@ const getVersionById = async (versionId) => {
 };
 
 const getLatestVersion = async (noteId) => {
+  
+  const noteIdNum = parseInt(noteId, 10);
 
   const note = await getClinicalNoteById(noteId);
 
@@ -186,14 +188,16 @@ const getLatestVersion = async (noteId) => {
     throw new NotFoundError('No se encontró ninguna versión para esta nota clínica');
   }
   return {
-    note,
+    noteId: noteIdNum,
     version: latestVersion
   };
 };
 
 const compareVersions = async (noteId, versionId1, versionId2) => {
+  // Convertir noteId a número para asegurar la comparación correcta de tipos
+  const noteIdNum = parseInt(noteId, 10);
 
-  const note = await getClinicalNoteById(noteId);
+  const note = await getClinicalNoteById(noteIdNum);
 
   const version1 = await clinicalNoteRepository.findVersionById(versionId1);
 
@@ -202,11 +206,12 @@ const compareVersions = async (noteId, versionId1, versionId2) => {
   if (!version1 || !version2) {
     throw new NotFoundError('Una o ambas versiones no fueron encontradas');
   }
-  if (version1.noteId !== noteId || version2.noteId !== noteId) {
+  
+  if (version1.noteId !== noteIdNum || version2.noteId !== noteIdNum) {
     throw new BusinessLogicError('Las versiones no pertenecen a la misma nota clínica');
   }
   return {
-    note,
+    noteId: noteIdNum,
     version1,
     version2,
     changes: {

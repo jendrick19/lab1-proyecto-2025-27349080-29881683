@@ -1,4 +1,7 @@
 const { Router } = require('express');
+const { authenticate } = require('../../../shared/middlewares/authMiddleware');
+const { hasPermission, hasAnyRole } = require('../../../shared/middlewares/authorizationMiddleware');
+
 const {
   listHandler,
   getHandler,
@@ -21,13 +24,24 @@ const {
 
 const router = Router();
 
-router.get('/', validateList, listHandler);
-router.post('/', validateCreate, createHandler);
-router.get('/:id', validateId, getHandler);
-router.patch('/:id', validateUpdate, updateHandler);
-router.get('/:id/versiones', validateId, getVersionHistoryHandler);
-router.get('/:id/version-actual', validateId, getLatestVersionHandler);
-router.get('/:id/comparar', validateCompareVersions, compareVersionsHandler);
-router.get('/version/:versionId', validateVersionId, getVersionHandler);
+// Todas las rutas requieren autenticación
+router.use(authenticate);
+
+// Solo profesionales, administradores y auditores pueden acceder a notas clínicas
+router.use(hasAnyRole(['profesional', 'administrador', 'auditor']));
+
+// Listar y obtener notas clínicas - Con permiso de lectura
+router.get('/', hasPermission('clinicalNotes.read'), validateList, listHandler);
+router.get('/:id', hasPermission('clinicalNotes.read'), validateId, getHandler);
+router.get('/:id/versiones', hasPermission('clinicalNotes.read'), validateId, getVersionHistoryHandler);
+router.get('/:id/version-actual', hasPermission('clinicalNotes.read'), validateId, getLatestVersionHandler);
+router.get('/:id/comparar', hasPermission('clinicalNotes.read'), validateCompareVersions, compareVersionsHandler);
+router.get('/version/:versionId', hasPermission('clinicalNotes.read'), validateVersionId, getVersionHandler);
+
+// Crear notas clínicas - Profesionales y administradores
+router.post('/', hasPermission('clinicalNotes.create'), validateCreate, createHandler);
+
+// Actualizar notas clínicas - Profesionales y administradores
+router.patch('/:id', hasPermission('clinicalNotes.update'), validateUpdate, updateHandler);
 
 module.exports = router;

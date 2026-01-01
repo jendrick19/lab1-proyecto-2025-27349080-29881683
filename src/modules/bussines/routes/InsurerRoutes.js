@@ -1,4 +1,6 @@
 const { Router } = require('express');
+const { authenticate } = require('../../../shared/middlewares/authMiddleware');
+const { hasPermission } = require('../../../shared/middlewares/authorizationMiddleware');
 
 const {
   listHandler,
@@ -17,15 +19,21 @@ const {
 
 const router = Router();
 
-router.get('/', validateList, listHandler);
+// Todas las rutas requieren autenticación
+router.use(authenticate);
 
-router.post('/', validateCreate, createHandler);
+// Listar y obtener aseguradoras - Todos pueden leer
+router.get('/', hasPermission('insurers.read'), validateList, listHandler);
+router.get('/:id', hasPermission('insurers.read'), validateId, getHandler);
 
-router.get('/:id', validateId, getHandler);
+// Crear aseguradoras - Solo administradores
+router.post('/', hasPermission('insurers.create'), validateCreate, createHandler);
 
-router.patch('/:id', validateUpdate, updateHandler);
+// Actualizar aseguradoras - Solo administradores
+router.patch('/:id', hasPermission('insurers.update'), validateUpdate, updateHandler);
 
-router.delete('/:id', validateId, deleteHandler);
+// Eliminar aseguradoras - Solo administradores
+router.delete('/:id', hasPermission('insurers.delete'), validateId, deleteHandler);
 
 module.exports = router;
 

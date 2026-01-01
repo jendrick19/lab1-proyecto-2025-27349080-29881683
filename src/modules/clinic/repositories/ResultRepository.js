@@ -2,12 +2,13 @@ const { Op } = require('sequelize');
 const db = require('../../../../database/models');
 const { Result, ResultVersion } = db.modules.clinic;
 
-const findById = async (id) => {
+const findById = async (id, transaction = null) => {
   return Result.findByPk(id, {
     include: [
       { model: db.modules.clinic.Order, as: 'order' },
       { model: db.modules.clinic.ResultVersion, as: 'versions' }
-    ]
+    ],
+    transaction
   });
 };
 
@@ -49,6 +50,7 @@ const createWithVersion = async (resultData, transaction = null) => {
   }, { transaction });
   
   // Crear versión inicial en el historial
+
   await ResultVersion.create({
     resultId: result.id,
     date: result.date,
@@ -57,7 +59,7 @@ const createWithVersion = async (resultData, transaction = null) => {
     version: 1
   }, { transaction });
   
-  return findById(result.id);
+  return findById(result.id,transaction);
 };
 
 const create = async (resultData) => {

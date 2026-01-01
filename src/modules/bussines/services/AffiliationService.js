@@ -34,7 +34,14 @@ const buildWhere = ({ personaId, planId, numeroPoliza, vigenteDesde, vigenteHast
   } else {
     where.status = true;
   }
-  addDateRangeToWhere(where, 'effectiveFrom', vigenteDesde, vigenteHasta);
+  // `vigenteDesde` filtra por la fecha de inicio (effectiveFrom)
+  if (vigenteDesde) {
+    addDateRangeToWhere(where, 'effectiveFrom', vigenteDesde, null);
+  }
+  // `vigenteHasta` filtra por la fecha de fin (effectiveTo)
+  if (vigenteHasta) {
+    addDateRangeToWhere(where, 'effectiveTo', null, vigenteHasta);
+  }
   return where;
 };
 

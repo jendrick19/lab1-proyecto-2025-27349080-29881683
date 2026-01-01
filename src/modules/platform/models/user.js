@@ -10,6 +10,24 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'userId',
         as: 'professional'
       });
+      User.hasMany(models.AccessLog, {
+        foreignKey: 'userId',
+        as: 'accessLogs'
+      });
+      
+      // Relación muchos a muchos con Role a través de UserRole
+      User.belongsToMany(models.Role, {
+        through: models.UserRole,
+        foreignKey: 'userId',
+        otherKey: 'roleId',
+        as: 'roles'
+      });
+
+      // Relación directa con tabla intermedia
+      User.hasMany(models.UserRole, {
+        foreignKey: 'userId',
+        as: 'userRoles'
+      });
     }
   }
   User.init({

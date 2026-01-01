@@ -1,4 +1,7 @@
 const { Router } = require('express');
+const { authenticate } = require('../../../shared/middlewares/authMiddleware');
+const { hasPermission, hasAnyRole } = require('../../../shared/middlewares/authorizationMiddleware');
+
 const {
   listHandler,
   getHandler,
@@ -16,11 +19,24 @@ const { episodeDiagnosisRouter } = require('./DiagnosisRouter');
 
 const router = Router();
 
-router.get('/', validateList, listHandler);
-router.post('/', validateCreate, createHandler);
-router.get('/:id', validateId, getHandler);
-router.patch('/:id', validateUpdate, updateHandler);
-router.patch('/:id/cerrar', validateId, closeHandler);
+// Todas las rutas requieren autenticación
+router.use(authenticate);
+
+// Solo profesionales, administradores y auditores pueden acceder a episodios
+router.use(hasAnyRole(['profesional', 'administrador', 'auditor']));
+
+// Listar y obtener episodios - Con permiso de lectura
+router.get('/', hasPermission('episodes.read'), validateList, listHandler);
+router.get('/:id', hasPermission('episodes.read'), validateId, getHandler);
+
+// Crear episodios - Profesionales y administradores
+router.post('/', hasPermission('episodes.create'), validateCreate, createHandler);
+
+// Actualizar episodios - Profesionales y administradores
+router.patch('/:id', hasPermission('episodes.update'), validateUpdate, updateHandler);
+router.patch('/:id/cerrar', hasPermission('episodes.update'), validateId, closeHandler);
+
+// Sub-rutas de diagnósticos (heredan los middlewares)
 router.use('/', episodeDiagnosisRouter);
 
 module.exports = router;

@@ -1,4 +1,6 @@
 const { Router } = require('express');
+const { authenticate } = require('../../../shared/middlewares/authMiddleware');
+const { hasPermission } = require('../../../shared/middlewares/authorizationMiddleware');
 
 const {
   listHandler,
@@ -17,11 +19,19 @@ const {
 
 const router = Router();
 
-router.get('/', validateList, listHandler);
-router.post('/', validateCreate, createHandler);
-router.get('/:id', validateId, getHandler);
-router.patch('/:id', validateUpdate, updateHandler);
-router.post('/:id/recalcular', validateId, recalculateHandler);
+// Todas las rutas requieren autenticación
+router.use(authenticate);
+
+// Listar y obtener facturas - Todos los roles autenticados pueden leer
+router.get('/', hasPermission('invoices.read'), validateList, listHandler);
+router.get('/:id', hasPermission('invoices.read'), validateId, getHandler);
+
+// Crear facturas - Cajeros y administradores
+router.post('/', hasPermission('invoices.create'), validateCreate, createHandler);
+
+// Actualizar facturas - Cajeros y administradores
+router.patch('/:id', hasPermission('invoices.update'), validateUpdate, updateHandler);
+router.post('/:id/recalcular', hasPermission('invoices.update'), validateId, recalculateHandler);
 
 module.exports = router;
 

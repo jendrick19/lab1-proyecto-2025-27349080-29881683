@@ -1,4 +1,7 @@
 const { Router } = require('express');
+const { authenticate } = require('../../../shared/middlewares/authMiddleware');
+const { hasPermission, hasAnyRole } = require('../../../shared/middlewares/authorizationMiddleware');
+
 const {
   listHandler,
   getHandler,
@@ -21,17 +24,31 @@ const {
 
 const router = Router();
 
-router.get('/', validateList, listHandler);
-router.post('/', validateCreate, createHandler);
-router.get('/:id', validateId, getHandler);
-router.put('/:id', validateUpdate, updateHandler);
-router.delete('/:id', validateId, deleteHandler);
+// Todas las rutas requieren autenticación
+router.use(authenticate);
 
+// Solo profesionales, administradores y auditores pueden acceder a diagnósticos
+router.use(hasAnyRole(['profesional', 'administrador', 'auditor']));
+
+// Listar y obtener diagnósticos - Con permiso de lectura
+router.get('/', hasPermission('diagnosis.read'), validateList, listHandler);
+router.get('/:id', hasPermission('diagnosis.read'), validateId, getHandler);
+
+// Crear diagnósticos - Profesionales y administradores
+router.post('/', hasPermission('diagnosis.create'), validateCreate, createHandler);
+
+// Actualizar diagnósticos - Profesionales y administradores
+router.put('/:id', hasPermission('diagnosis.update'), validateUpdate, updateHandler);
+
+// Eliminar diagnósticos - Profesionales y administradores
+router.delete('/:id', hasPermission('diagnosis.delete'), validateId, deleteHandler);
+
+// Router para diagnósticos dentro de episodios
 const episodeDiagnosisRouter = Router();
 
-episodeDiagnosisRouter.get('/:episodeId/diagnosticos', validateEpisodeId, getByEpisodeHandler);
-episodeDiagnosisRouter.get('/:episodeId/diagnosticos/principal', validatePrincipalByEpisode, getPrincipalHandler);
-episodeDiagnosisRouter.put('/:episodeId/diagnosticos/:diagnosisId/principal', validateChangePrincipal, changePrincipalHandler);
+episodeDiagnosisRouter.get('/:episodeId/diagnosticos', hasPermission('diagnosis.read'), validateEpisodeId, getByEpisodeHandler);
+episodeDiagnosisRouter.get('/:episodeId/diagnosticos/principal', hasPermission('diagnosis.read'), validatePrincipalByEpisode, getPrincipalHandler);
+episodeDiagnosisRouter.put('/:episodeId/diagnosticos/:diagnosisId/principal', hasPermission('diagnosis.update'), validateChangePrincipal, changePrincipalHandler);
 
 module.exports = router;
 module.exports.episodeDiagnosisRouter = episodeDiagnosisRouter;

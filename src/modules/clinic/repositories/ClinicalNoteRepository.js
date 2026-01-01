@@ -2,13 +2,14 @@ const { Op } = require('sequelize');
 const db = require('../../../../database/models');
 const { ClinicalNote, ClinicalNoteVersion } = db.modules.clinic;
 
-const findById = async (id) => {
+const findById = async (id, transaction = null) => {
   return ClinicalNote.findByPk(id, {
     include: [
       { model: db.modules.operative.Professional, as: 'professional' },
       { model: db.modules.clinic.Episode, as: 'episode' },
       { model: db.modules.clinic.ClinicalNoteVersion, as: 'clinicalNoteVersions' }
-    ]
+    ],
+    transaction
   });
 };
 
@@ -34,7 +35,7 @@ const createWithVersion = async (noteData, versionData, transaction = null) => {
     noteId: note.id,
     ...versionData
   }, { transaction });
-  return findById(note.id);
+  return findById(note.id, transaction);
 };
 
 const findVersionById = async (versionId) => {

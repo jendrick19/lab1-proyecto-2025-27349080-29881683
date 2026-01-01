@@ -1,4 +1,6 @@
 const { Router } = require('express');
+const { authenticate } = require('../../../shared/middlewares/authMiddleware');
+const { hasPermission } = require('../../../shared/middlewares/authorizationMiddleware');
 
 const {
   listHandler,
@@ -17,10 +19,20 @@ const {
 
 const router = Router();
 
-router.get('/', validateList, listHandler);
-router.post('/', validateCreate, createHandler);
-router.get('/:id', validateId, getHandler);
-router.patch('/:id', validateUpdate, updateHandler);
-router.delete('/:id', validateId, deleteHandler);
+// Todas las rutas requieren autenticación
+router.use(authenticate);
+
+// Listar y obtener pacientes - Todos los roles autenticados pueden leer
+router.get('/', hasPermission('patients.read'), validateList, listHandler);
+router.get('/:id', hasPermission('patients.read'), validateId, getHandler);
+
+// Crear pacientes - Profesionales y administradores
+router.post('/', hasPermission('patients.create'), validateCreate, createHandler);
+
+// Actualizar pacientes - Profesionales y administradores
+router.patch('/:id', hasPermission('patients.update'), validateUpdate, updateHandler);
+
+// Eliminar pacientes - Solo administradores
+router.delete('/:id', hasPermission('patients.delete'), validateId, deleteHandler);
 
 module.exports = router;

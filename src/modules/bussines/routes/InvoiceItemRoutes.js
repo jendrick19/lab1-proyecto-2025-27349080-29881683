@@ -1,4 +1,6 @@
 const { Router } = require('express');
+const { authenticate } = require('../../../shared/middlewares/authMiddleware');
+const { hasAnyRole } = require('../../../shared/middlewares/authorizationMiddleware');
 
 const {
   listHandler,
@@ -18,12 +20,18 @@ const {
 
 const router = Router();
 
+// Todas las rutas requieren autenticación
+router.use(authenticate);
+
+// Listar y obtener items de factura - Todos los autenticados pueden leer
 router.get('/', validateList, listHandler);
 router.get('/factura/:invoiceId', listByInvoiceHandler);
-router.post('/factura/:invoiceId', validateCreate, createHandler);
 router.get('/:id', validateId, getHandler);
-router.patch('/:id', validateUpdate, updateHandler);
-router.delete('/:id', validateId, removeHandler);
+
+// Gestión de items - Administradores y cajeros
+router.post('/factura/:invoiceId', hasAnyRole(['administrador', 'cajero']), validateCreate, createHandler);
+router.patch('/:id', hasAnyRole(['administrador', 'cajero']), validateUpdate, updateHandler);
+router.delete('/:id', hasAnyRole(['administrador', 'cajero']), validateId, removeHandler);
 
 module.exports = router;
 

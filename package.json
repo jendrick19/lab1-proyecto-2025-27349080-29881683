@@ -13,7 +13,10 @@
     "seed:notifications": "npx sequelize-cli db:seed --seed 20251227000000-demo-notifications.js",
     "seed:notifications:undo": "npx sequelize-cli db:seed:undo --seed 20251227000000-demo-notifications.js",
     "test:mailtrap": "node scripts/test-mailtrap.js",
-    "send:email": "node scripts/send-test-email.js"
+    "send:email": "node scripts/send-test-email.js",
+    "test:auth": "node scripts/test-auth.js",
+    "assign:role": "node scripts/assign-role-to-user.js",
+    "test:routes": "node scripts/test-protected-routes.js"
   },
   "keywords": [
     "node",
@@ -23,11 +26,14 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bcryptjs": "^3.0.3",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "express-validator": "^7.3.0",
+    "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.15.3",
     "nodemailer": "^7.0.12",
+    "openai": "^6.15.0",
     "sequelize": "^6.37.7"
   },
   "devDependencies": {

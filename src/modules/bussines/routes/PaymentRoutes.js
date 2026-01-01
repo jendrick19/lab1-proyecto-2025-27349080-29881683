@@ -1,4 +1,6 @@
 const { Router } = require('express');
+const { authenticate } = require('../../../shared/middlewares/authMiddleware');
+const { hasPermission } = require('../../../shared/middlewares/authorizationMiddleware');
 
 const {
   listHandler,
@@ -19,12 +21,20 @@ const {
 
 const router = Router();
 
-router.get('/', validateList, listHandler);
-router.post('/', validateCreate, createHandler);
-router.get('/factura/:invoiceId', validateInvoiceId, getByInvoiceHandler);
-router.get('/factura/:invoiceId/saldo', validateInvoiceId, getPendingBalanceHandler);
-router.get('/:id', validateId, getHandler);
-router.patch('/:id', validateUpdate, updateHandler);
+// Todas las rutas requieren autenticación
+router.use(authenticate);
+
+// Listar y obtener pagos - Todos los roles autenticados pueden leer
+router.get('/', hasPermission('payments.read'), validateList, listHandler);
+router.get('/factura/:invoiceId', hasPermission('payments.read'), validateInvoiceId, getByInvoiceHandler);
+router.get('/factura/:invoiceId/saldo', hasPermission('payments.read'), validateInvoiceId, getPendingBalanceHandler);
+router.get('/:id', hasPermission('payments.read'), validateId, getHandler);
+
+// Crear pagos - Cajeros y administradores
+router.post('/', hasPermission('payments.create'), validateCreate, createHandler);
+
+// Actualizar pagos - Cajeros y administradores
+router.patch('/:id', hasPermission('payments.update'), validateUpdate, updateHandler);
 
 module.exports = router;
 
