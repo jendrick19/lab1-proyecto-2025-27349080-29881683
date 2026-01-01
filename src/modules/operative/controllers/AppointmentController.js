@@ -47,11 +47,11 @@ const mapRequestToCreate = (body) => {
     peopleId: body.pacienteId,
     professionalId: body.profesionalId,
     unitId: body.unidadId,
+    scheduleId: body.agendaId,
     startTime: body.inicio,
     endTime: body.fin,
     reason: body.motivo,
   };
-  if (body.agendaId !== undefined) payload.scheduleId = body.agendaId;
   if (body.canal !== undefined) payload.channel = body.canal;
   if (body.estado !== undefined) payload.status = body.estado;
   if (body.observaciones !== undefined) payload.observations = body.observaciones;

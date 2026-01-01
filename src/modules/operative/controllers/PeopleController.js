@@ -29,7 +29,6 @@ const mapModelToResponse = (person) => {
 
 const mapRequestToCreate = (body) => {
   const payload = {
-    id: Number(body.id),
     documentType: body.tipoDocumento,
     documentId: body.numeroDocumento,
     names: body.nombres,
