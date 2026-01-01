@@ -82,7 +82,7 @@ const validateCreate = [
     .isInt({ min: 1 }).withMessage('El ID de la unidad debe ser un número entero positivo')
     .custom(checkCareUnitExists),
   body('agendaId')
-    .optional()
+    .notEmpty().withMessage('El ID de la agenda es requerido')
     .isInt({ min: 1 }).withMessage('El ID de la agenda debe ser un número entero positivo')
     .custom(checkScheduleExists),
   body('inicio')

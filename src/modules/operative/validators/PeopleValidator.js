@@ -33,9 +33,6 @@ const checkDocumentUniqueness = async (value, { req }) => {
 };
 
 const validateCreate = [
-  body('id')
-    .notEmpty().withMessage('El ID es requerido')
-    .isInt({ min: 1 }).withMessage('El ID debe ser un número entero positivo'),
   body('tipoDocumento')
     .notEmpty().withMessage('El tipo de documento es requerido')
     .customSanitizer((value) => value ? value.toLowerCase() : value)
