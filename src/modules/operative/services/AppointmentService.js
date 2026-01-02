@@ -401,10 +401,20 @@ const softDeleteAppointment = async (id) => {
   return appointment;
 };
 
+const getAppointmentHistory = async (id) => {
+  // 1. Verificar que la cita exista (reutilizamos la función existente que lanza error si no existe)
+  await getAppointmentById(id);
+
+  // 2. Buscar el historial
+  const history = await appointmentRepository.findHistoryByAppointmentId(id);
+  return history;
+};
+
 module.exports = {
     listAppointments,
     getAppointmentById,
     createAppointment,
     updateAppointment,
     softDeleteAppointment,
+    getAppointmentHistory
   };

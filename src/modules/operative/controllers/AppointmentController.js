@@ -4,6 +4,7 @@ const {
   createAppointment,
   updateAppointment,
   softDeleteAppointment,
+  getAppointmentHistory
 } = require('../services/AppointmentService');
 
 const mapModelToResponse = (appointment) => {
@@ -75,6 +76,36 @@ const mapRequestToUpdate = (body) => {
   if (body.observaciones !== undefined) payload.observations = body.observaciones;
   
   return payload;
+};
+
+const mapHistoryToResponse = (historyItem) => ({
+  id: historyItem.id,
+  cambioEstado: historyItem.oldStatus !== historyItem.newStatus,
+  estadoAnterior: historyItem.oldStatus,
+  estadoNuevo: historyItem.newStatus,
+  cambioHorario: (historyItem.oldStartTime?.getTime() !== historyItem.newStartTime?.getTime()) || 
+                 (historyItem.oldEndTime?.getTime() !== historyItem.newEndTime?.getTime()),
+  inicioAnterior: historyItem.oldStartTime,
+  inicioNuevo: historyItem.newStartTime,
+  finAnterior: historyItem.oldEndTime,
+  finNuevo: historyItem.newEndTime,
+  razonCambio: historyItem.changeReason,
+  fechaCambio: historyItem.changedAt
+});
+
+const historyHandler = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const history = await getAppointmentHistory(id);
+    
+    return res.json({
+      codigo: 200,
+      mensaje: 'Historial de la cita obtenido exitosamente',
+      data: history.map(mapHistoryToResponse) // O simplemente 'data: history' si quieres el objeto crudo
+    });
+  } catch (error) {
+    return next(error);
+  }
 };
 
 const listHandler = async (req, res, next) => {
@@ -187,4 +218,5 @@ module.exports = {
   createHandler,
   updateHandler,
   deleteHandler,
+  historyHandler
 };
