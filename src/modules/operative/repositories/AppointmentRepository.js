@@ -2,6 +2,7 @@ const { Op } = require('sequelize');
 const db = require('../../../../database/models');
 const { Appointment, AppointmentHistory } = db.modules.operative;
 
+
 const findById = async (id) => {
   return Appointment.findByPk(id, {
     include: [
@@ -62,6 +63,13 @@ const findOverlapping = async (scheduleId, startTime, endTime, excludeAppointmen
   return Appointment.findOne({ where });
 };
 
+const findHistoryByAppointmentId = async (appointmentId) => {
+  return AppointmentHistory.findAll({
+    where: { appointmentId },
+    order: [['changedAt', 'DESC']] // Ordenar del más reciente al más antiguo
+  });
+};
+
 const findOverlappingByProfessional = async (professionalId, startTime, endTime, excludeAppointmentId = null) => {
   const where = buildOverlapWhere(startTime, endTime, excludeAppointmentId);
   where.professionalId = professionalId;
@@ -104,5 +112,6 @@ module.exports = {
   update,
   save,
   createHistory,
-  countConfirmedBySchedule
+  countConfirmedBySchedule,
+  findHistoryByAppointmentId
 };
