@@ -83,27 +83,6 @@ const mapRequestToUpdate = (body) => {
   return payload;
 };
 
-const mapUserFromRequest = (body) => {
-  const userData = {};
-  if (body.usuario) {
-    if (body.usuario.username !== undefined) userData.username = body.usuario.username;
-    if (body.usuario.email !== undefined) userData.email = body.usuario.email;
-    if (body.usuario.password !== undefined) {
-      userData.passwordHash = body.usuario.password;
-    }
-    if (body.usuario.passwordHash !== undefined) userData.passwordHash = body.usuario.passwordHash;
-    if (body.usuario.estado !== undefined) {
-      if (typeof body.usuario.estado === 'string') {
-        userData.status = ['true', '1', 'activo', 'active'].includes(body.usuario.estado.toLowerCase());
-      } else {
-        userData.status = Boolean(body.usuario.estado);
-      }
-    }
-  }
-
-  return userData;
-};
-
 const listHandler = async (req, res, next) => {
   try {
     const {
@@ -156,26 +135,17 @@ const getHandler = async (req, res, next) => {
 const createHandler = async (req, res, next) => {
   try {
     const professionalData = mapRequestToCreate(req.body);
-    const userData = mapUserFromRequest(req.body);
     if (professionalData.status === undefined) {
       professionalData.status = true;
     }
     if (professionalData.scheduleEnabled === undefined) {
       professionalData.scheduleEnabled = false;
     }
-    const result = await createProfessional(professionalData, userData);
+    const result = await createProfessional(professionalData);
     return res.status(201).json({
       codigo: 201,
       mensaje: 'Profesional creado exitosamente',
-      data: {
-        user: {
-          id: result.user.id,
-          username: result.user.username,
-          email: result.user.email,
-          estado: result.user.status,
-        },
-        professional: mapModelToResponse(result.professional),
-      },
+      data: mapModelToResponse(result),
     });
   } catch (error) {
     return next(error);

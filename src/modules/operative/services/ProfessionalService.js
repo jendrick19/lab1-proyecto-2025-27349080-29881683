@@ -84,14 +84,14 @@ const getProfessionalById = async (id) => {
   return professional;
 };
 
-const createProfessional = async (professionalData, userData) => {
+const createProfessional = async (professionalData) => {
   if (professionalData.specialty && !ALLOWED_SPECIALTIES.includes(professionalData.specialty)) {
     throw new BusinessLogicError(
       `La especialidad "${professionalData.specialty}" no está permitida. ` +
       `Especialidades válidas: ${ALLOWED_SPECIALTIES.join(', ')}`
     );
   }
-  return professionalRepository.createWithUser(professionalData, userData);
+  return professionalRepository.create(professionalData);
 };
 
 const updateProfessional = async (professional, payload) => {

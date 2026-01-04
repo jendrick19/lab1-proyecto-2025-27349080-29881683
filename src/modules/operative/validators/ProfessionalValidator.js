@@ -91,7 +91,7 @@ const checkUsernameUniqueness = async (value) => {
 };
 
 const validateCreate = [
-  validateAllowedFields(['nombres', 'apellidos', 'registroProfesional', 'especialidad', 'correo', 'telefono', 'agendaHabilitada', 'estado', 'userId', 'usuario']),
+  validateAllowedFields(['nombres', 'apellidos', 'registroProfesional', 'especialidad', 'correo', 'telefono', 'agendaHabilitada', 'estado', 'userId']),
   validateNames(),
   validateSurnames(),
   body('registroProfesional')
@@ -108,24 +108,9 @@ const validateCreate = [
     .optional()
     .isBoolean().withMessage('agendaHabilitada debe ser verdadero o falso'),
   validateStatus('estado'),
-  body('usuario')
-    .notEmpty().withMessage('Los datos del usuario son requeridos'),
-  body('usuario.username')
-    .notEmpty().withMessage('El nombre de usuario es requerido')
-    .isLength({ min: 3, max: 50 }).withMessage('El nombre de usuario debe tener entre 3 y 50 caracteres')
-    .matches(/^[a-zA-Z0-9_]+$/).withMessage('El nombre de usuario solo puede contener letras, números y guiones bajos')
-    .custom(checkUsernameUniqueness),
-  body('usuario.email')
-    .notEmpty().withMessage('El correo del usuario es requerido')
-    .isEmail().withMessage('El correo del usuario debe ser una dirección válida')
-    .normalizeEmail(),
-  body('usuario.password')
-    .notEmpty().withMessage('La contraseña es requerida')
-    .isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 8 caracteres')
-    .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/).withMessage('La contraseña debe contener al menos una letra minúscula, una mayúscula y un número'),
-  body('usuario.estado')
-    .optional()
-    .isBoolean().withMessage('El estado del usuario debe ser verdadero o falso'),
+  body('userId')
+    .optional({ nullable: true })
+    .isInt().withMessage('El ID de usuario debe ser un número entero'),
   handleValidationErrors,
 ];
 

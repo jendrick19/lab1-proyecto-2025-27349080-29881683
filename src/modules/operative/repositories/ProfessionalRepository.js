@@ -1,6 +1,5 @@
 const db = require('../../../../database/models');
 const { Professional } = db.modules.operative;
-const { User } = db.modules.platform;
 
 const findById = async (id) => {
     return Professional.findByPk(id);
@@ -15,16 +14,9 @@ const findAndCountAll = async ({ where, offset, limit, order }) => {
     });
 };
 
-const createWithUser = async (professionalData, userData) => {
-    const user = await User.create({
-        username: userData.username,
-        email: userData.email,
-        passwordHash: userData.passwordHash,
-        status: userData.status !== undefined ? userData.status : true,
-        creationDate: new Date()
-    });
-    const professional = await Professional.create({
-        userId: user.id,
+const create = async (professionalData) => {
+    return Professional.create({
+        userId: professionalData.userId || null,
         names: professionalData.names,
         surNames: professionalData.surNames,
         professionalRegister: professionalData.professionalRegister,
@@ -34,7 +26,6 @@ const createWithUser = async (professionalData, userData) => {
         scheduleEnabled: professionalData.scheduleEnabled !== undefined ? professionalData.scheduleEnabled : false,
         status: professionalData.status !== undefined ? professionalData.status : true
     });
-    return { user, professional };
 };
 
 const update = async (professional, payload) => {
@@ -48,7 +39,7 @@ const changeStatus = async (professional) => {
 module.exports = {
     findById,
     findAndCountAll,
-    createWithUser,
+    create,
     update,
     changeStatus,
 };
